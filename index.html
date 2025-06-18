@@ -346,6 +346,73 @@ body {
         max-height: 120px;
     }
 }
+/* Picture-in-Picture של המדריך */
+.instructor-pip {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 250px;
+    height: 180px;
+    background: #000;
+    border-radius: 15px;
+    border: 3px solid #667eea;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 1000;
+    overflow: hidden;
+    display: none;
+    cursor: move;
+}
+
+.instructor-pip video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.instructor-pip .pip-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.instructor-pip .pip-controls {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
+}
+
+.pip-btn {
+    background: rgba(0,0,0,0.7);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+/* כשמחזיקים גרירה */
+.instructor-pip.dragging {
+    opacity: 0.8;
+    transform: rotate(2deg);
+}
+
+/* אפקט hover */
+.instructor-pip:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
     </style>
 </head>
 <body>
@@ -407,7 +474,15 @@ body {
 </div>
         </div>
     </div>
-
+<!-- Picture-in-Picture של המדריך -->
+<div class="instructor-pip" id="instructorPip">
+    <div class="pip-header">המדריך</div>
+    <div class="pip-controls">
+        <button class="pip-btn" onclick="togglePipSize()" title="שנה גודל">⛶</button>
+        <button class="pip-btn" onclick="closePip()" title="סגור">×</button>
+    </div>
+    <video id="instructorPipVideo" autoplay playsinline></video>
+</div>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
@@ -746,44 +821,55 @@ function updateChatStatus(enabled) {
         }
 
         // Update main content based on activity
-        function updateMainContent(activity) {
-            const countdownTimer = document.getElementById('countdownTimer');
-            const liveStream = document.getElementById('liveStream');
-            const activityFrame = document.getElementById('activityFrame');
-            const liveIndicator = document.getElementById('liveIndicator');
-            
-            // Hide all content types
-            countdownTimer.style.display = 'none';
-            liveStream.style.display = 'none';
-            activityFrame.style.display = 'none';
-            liveIndicator.style.display = 'none';
-            
-            if (!activity) {
-                countdownTimer.style.display = 'flex';
-                return;
+function updateMainContent(activity) {
+    const countdownTimer = document.getElementById('countdownTimer');
+    const liveStream = document.getElementById('liveStream');
+    const activityFrame = document.getElementById('activityFrame');
+    const liveIndicator = document.getElementById('liveIndicator');
+    
+    // Hide all content types
+    countdownTimer.style.display = 'none';
+    liveStream.style.display = 'none';
+    activityFrame.style.display = 'none';
+    liveIndicator.style.display = 'none';
+    
+    if (!activity) {
+        countdownTimer.style.display = 'flex';
+        hidePip(); // ✅ הסתר PIP במצב countdown
+        return;
+    }
+    
+    switch (activity.type) {
+        case 'countdown':
+            countdownTimer.style.display = 'flex';
+            if (activity.endTime) {
+                startCountdown(activity.endTime);
             }
+            hidePip(); // ✅ הסתר PIP
+            break;
             
-            switch (activity.type) {
-                case 'countdown':
-                    countdownTimer.style.display = 'flex';
-                    if (activity.endTime) {
-                        startCountdown(activity.endTime);
-                    }
-                    break;
-                    
-                case 'live':
-                    liveStream.style.display = 'flex';
-                    liveIndicator.style.display = 'block';
-                    // Reset offer processing for new live session
-                    offerProcessed = false;
-                    break;
-                    
-                case 'iframe':
-                    activityFrame.style.display = 'block';
-                    activityFrame.src = activity.url;
-                    break;
-            }
-        }
+        case 'live':
+            liveStream.style.display = 'flex';
+            liveIndicator.style.display = 'block';
+            offerProcessed = false;
+            hidePip(); // ✅ הסתר PIP בשידור חי מלא
+            break;
+            
+        case 'iframe':
+            activityFrame.style.display = 'block';
+            activityFrame.src = activity.url;
+            
+            // ✅ הצג PIP בפעילויות iframe
+            setTimeout(() => {
+                showInstructorPip();
+            }, 1000); // חכה שהiframe יטען
+            break;
+            
+        default:
+            hidePip();
+            break;
+    }
+}
 
         // Start countdown timer
         function startCountdown(endTime) {
@@ -874,14 +960,106 @@ function sendChatMessage() {
         });
 
         // Add click-to-play fallback
-        document.addEventListener('DOMContentLoaded', () => {
-            const videoElement = document.getElementById('studentVideo');
-            videoElement.addEventListener('click', () => {
-                if (videoElement.paused) {
-                    videoElement.play().catch(console.warn);
-                }
-            });
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    const videoElement = document.getElementById('studentVideo');
+    videoElement.addEventListener('click', () => {
+        if (videoElement.paused) {
+            videoElement.play().catch(console.warn);
+        }
+    });
+    
+    // ✅ אתחל גרירה של PIP
+    initPipDragging();
+});
+        // ✅ משתנים ל-PIP
+let isPipVisible = false;
+let pipSize = 'small'; // 'small' או 'large'
+let isDragging = false;
+let dragOffset = { x: 0, y: 0 };
+
+// ✅ פונקציות PIP
+function showInstructorPip() {
+    const pip = document.getElementById('instructorPip');
+    const pipVideo = document.getElementById('instructorPipVideo');
+    
+    if (remoteStream && !isPipVisible) {
+        pipVideo.srcObject = remoteStream.clone(); // שכפול הזרם
+        pip.style.display = 'block';
+        isPipVisible = true;
+        
+        // הפעל את הוידיאו
+        pipVideo.muted = false; // עם קול!
+        pipVideo.play();
+    }
+}
+
+function hidePip() {
+    const pip = document.getElementById('instructorPip');
+    const pipVideo = document.getElementById('instructorPipVideo');
+    
+    pip.style.display = 'none';
+    pipVideo.srcObject = null;
+    isPipVisible = false;
+}
+
+function closePip() {
+    hidePip();
+}
+
+function togglePipSize() {
+    const pip = document.getElementById('instructorPip');
+    
+    if (pipSize === 'small') {
+        pip.style.width = '400px';
+        pip.style.height = '300px';
+        pipSize = 'large';
+    } else {
+        pip.style.width = '250px';
+        pip.style.height = '180px';
+        pipSize = 'small';
+    }
+}
+
+// ✅ גרירה של ה-PIP
+function initPipDragging() {
+    const pip = document.getElementById('instructorPip');
+    
+    pip.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('pip-btn')) return; // לא לגרור כשלוחצים על כפתור
+        
+        isDragging = true;
+        pip.classList.add('dragging');
+        
+        const rect = pip.getBoundingClientRect();
+        dragOffset.x = e.clientX - rect.left;
+        dragOffset.y = e.clientY - rect.top;
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const newX = e.clientX - dragOffset.x;
+            const newY = e.clientY - dragOffset.y;
+            
+            // הגבל לגבולות המסך
+            const maxX = window.innerWidth - pip.offsetWidth;
+            const maxY = window.innerHeight - pip.offsetHeight;
+            
+            pip.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+            pip.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
+            pip.style.right = 'auto';
+            pip.style.bottom = 'auto';
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            pip.classList.remove('dragging');
+        }
+    });
+}
     </script>
 </body>
 </html>
