@@ -419,24 +419,30 @@
 <!-- בתוך live-controls -->
 <div class="control-buttons">
     <button class="btn btn-danger" id="liveBtn" onclick="toggleLive()">🔴 התחל שידור חי</button>
-    <button class="btn btn-warning" id="chatBtn" onclick="toggleChat()">💬 הפעל צ'אט</button>
+    <button class="btn btn-warning" id="chatBtn" onclick="toggleChat()">💬 כבה צ'אט</button>
     <button class="btn btn-primary" onclick="resetCamera()">🔄 איפוס מצלמה</button>
+  <button class="btn btn-danger" onclick="returnToLive()" id="returnToLiveBtn" style="display: none;">
+        📺 חזרה לשידור חי
+    </button>
 </div>
                 <div id="streamStatus" style="text-align: center; margin-top: 10px; color: #bdc3c7;"></div>
             </div>
 
             <!-- Navigation Controls -->
-            <div class="navigation-controls" id="navigationControls" style="display: none;">
-                <h3 style="margin-bottom: 15px;">ניווט בפעילויות</h3>
-                <div class="current-activity" id="currentActivityDisplay">
-                    פעילות נוכחית: לא נבחרה
-                </div>
-                <div class="nav-buttons">
-                    <button class="btn btn-primary" onclick="previousActivity()">⏮️ קודם</button>
-                    <button class="btn btn-success" onclick="nextActivity()">⏭️ הבא</button>
-                    <button class="btn btn-warning" onclick="showCountdown()">⏰ הצג שעון</button>
-                </div>
-            </div>
+<!-- Navigation Controls -->
+<div class="navigation-controls" id="navigationControls" style="display: none;">
+    <h3 style="margin-bottom: 15px;">ניווט בפעילויות</h3>
+    <div class="current-activity" id="currentActivityDisplay">
+        פעילות נוכחית: לא נבחרה
+    </div>
+    <div class="nav-buttons">
+        <button class="btn btn-primary" onclick="previousActivity()">⏮️ קודם</button>
+        <button class="btn btn-success" onclick="nextActivity()">⏭️ הבא</button>
+        <button class="btn btn-warning" onclick="showCountdown()">⏰ הצג שעון</button>
+        <!-- ✅ הוסף את הכפתור החדש -->
+
+    </div>
+</div>
 
             <!-- Participants Panel -->
             <div class="participants-panel" id="participantsPanel" style="display: none;">
@@ -1143,7 +1149,8 @@ pc.onconnectionstatechange = async () => {
                 });
                 
                 console.log('✅ שידור חי התחיל בהצלחה');
-                
+                        document.getElementById('returnToLiveBtn').style.display = 'none';
+
             } catch (error) {
                 console.error('❌ שגיאה בהתחלת שידור:', error);
                 alert('שגיאה בהתחלת השידור: ' + error.message);
@@ -1233,7 +1240,8 @@ async function createAndSendOffer() {
                 });
                 
                 console.log('✅ שידור הופסק בהצלחה');
-                
+                        document.getElementById('returnToLiveBtn').style.display = 'none';
+
             } catch (error) {
                 console.error('❌ שגיאה בהפסקת שידור:', error);
             }
@@ -1290,19 +1298,27 @@ async function createAndSendOffer() {
             }
         }
 
-        // Execute activity
-        function executeActivity(activity) {
-            if (!activity) return;
-            
-            database.ref(`sessions/${currentSessionId}/currentActivity`).set({
-                ...activity,
-                timestamp: Date.now()
-            });
-            
-            database.ref(`sessions/${currentSessionId}/currentActivityIndex`).set(currentActivityIndex);
-            
-            updateCurrentActivityDisplay(activity.name);
-        }
+// Execute activity
+function executeActivity(activity) {
+    if (!activity) return;
+    
+    database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+        ...activity,
+        timestamp: Date.now()
+    });
+    
+    database.ref(`sessions/${currentSessionId}/currentActivityIndex`).set(currentActivityIndex);
+    
+    updateCurrentActivityDisplay(activity.name);
+    
+    // ✅ הצג/הסתר כפתור חזרה לשידור חי
+    const returnBtn = document.getElementById('returnToLiveBtn');
+    if (activity.type !== 'live' && isStreaming) {
+        returnBtn.style.display = 'inline-block';
+    } else {
+        returnBtn.style.display = 'none';
+    }
+}
 
         // Update current activity display
         function updateCurrentActivityDisplay(activityName) {
@@ -1553,7 +1569,23 @@ async function resetCamera() {
                 localStream.getTracks().forEach(track => track.stop());
             }
         });
-
+// ✅ פונקציה חדשה - חזרה לשידור חי
+function returnToLive() {
+    // עדכן לפעילות שידור חי
+    database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+        type: 'live',
+        streaming: isStreaming,
+        timestamp: Date.now()
+    });
+    
+    // עדכן את התצוגה המקומית
+    updateCurrentActivityDisplay('שידור חי');
+    
+    // הסתר את הכפתור
+    document.getElementById('returnToLiveBtn').style.display = 'none';
+    
+    console.log('🔄 חזרה לשידור חי');
+}
     </script>
 </body>
 </html>
