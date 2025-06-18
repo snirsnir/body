@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חוקרי הגוף - המסע שלכם לתוך גוף האדם</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #4a90e2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 4px;
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 15px;
+            aspect-ratio: 8/5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cell {
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 0.75em;
+            position: relative;
+            min-height: 75px;
+            padding: 6px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        .cell.blue { 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+            color: white;
+        }
+        .cell.yellow { 
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); 
+            color: #2d3436;
+        }
+        .cell.pink { 
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); 
+            color: white;
+        }
+        .cell.purple { 
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); 
+            color: white;
+        }
+        .cell.green { 
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
+            color: white;
+        }
+        .cell.orange { 
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); 
+            color: white;
+        }
+        .cell.black { 
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); 
+            color: white; 
+        }
+        .cell.start { 
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 100%); 
+            color: white;
+            font-weight: bold;
+        }
+        .cell.finish { 
+            background: linear-gradient(135deg, #fdcb6e 0%, #fd79a8 100%); 
+            color: white;
+            font-weight: bold;
+        }
+
+        .cell-number {
+            font-size: 0.7em;
+            margin-bottom: 3px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell-organ {
+            font-size: 2em;
+            margin: 3px 0;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .cell-text {
+            font-size: 0.7em;
+            margin-top: 3px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.1;
+        }
+
+        .dice-container {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dice {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border: 4px solid #333;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .dice:hover {
+            transform: scale(1.1);
+            background: #f8f9fa;
+        }
+
+        .dice.rolling {
+            animation: roll 1s ease-in-out;
+        }
+
+        @keyframes roll {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+        }
+
+        .dice-label {
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .player {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            z-index: 20;
+            transition: all 0.6s ease;
+            font-size: 0.9em;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            background: #e74c3c;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;  /* שינוי מ-8% ל-2% */
+    padding: 30px;    /* שינוי מ-40px ל-30px */
+    border-radius: 25px;
+    width: 95%;       /* שינוי מ-90% ל-95% */
+    max-width: 650px;
+    max-height: 90vh; /* הוספת מגבלת גובה */
+    overflow-y: auto; /* הוספת גלילה אם צריך */
+    text-align: center;
+    position: relative;
+    animation: slideIn 0.4s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-60px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            left: 25px;
+            top: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .question-organ {
+            font-size: 4em;
+            margin: 20px 0;
+            filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.3));
+        }
+
+        .question-title {
+            font-size: 2.2em;
+            color: #4a90e2;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .answer {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 3px solid #dee2e6;
+            border-radius: 20px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .answer:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: #4a90e2;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .answer.correct {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+            color: #155724;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .answer.wrong {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-color: #dc3545;
+            color: #721c24;
+            animation: wrongShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .bonus-card {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            animation: bonusBounce 0.8s ease;
+            border: 4px solid #fd79a8;
+        }
+
+        @keyframes bonusBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-2deg); }
+            75% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .bonus-organ {
+            font-size: 4em;
+            margin: 15px 0;
+            animation: heartBeat 1s infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .bonus-title {
+            font-size: 3em;
+            color: #d63031;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .bonus-text {
+            font-size: 1.6em;
+            color: #2d3436;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .celebration {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .celebration-organ {
+            font-size: 5em;
+            margin: 20px 0;
+            animation: victoryDance 2s infinite;
+        }
+
+        @keyframes victoryDance {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            75% { transform: rotate(10deg) scale(1.1); }
+        }
+
+        .celebration-title {
+            font-size: 3.5em;
+            color: #00b894;
+            margin-bottom: 25px;
+            animation: celebrationPulse 1.5s infinite;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+        }
+
+        @keyframes celebrationPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .celebration-text {
+            font-size: 1.8em;
+            color: #2d3436;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .song-text {
+            font-size: 1.4em;
+            color: #d63031;
+            font-weight: bold;
+            margin: 25px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe0e6 100%);
+            border-radius: 15px;
+            border: 2px solid #fd79a8;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            font-size: 1.3em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 3px solid #4a90e2;
+        }
+
+        .instructions-title {
+            font-size: 2em;
+            color: #1976d2;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .instructions-text {
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.4em;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20);
+                opacity: 0;
+            }
+        }
+
+        @keyframes spark {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes playerMove {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(8, 1fr);
+                gap: 2px;
+                padding: 8px;
+            }
+            
+            .cell {
+                font-size: 0.6em;
+                min-height: 55px;
+                padding: 3px;
+            }
+            
+            .cell-organ {
+                font-size: 1.5em;
+            }
+            
+            .cell-text {
+                font-size: 0.55em;
+            }
+            
+            .cell-number {
+                font-size: 0.6em;
+                width: 15px;
+                height: 15px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .dice-container {
+                right: 15px;
+                top: 15px;
+            }
+            
+            .dice {
+                width: 70px;
+                height: 70px;
+                font-size: 2em;
+            }
+            
+            .player {
+                width: 22px;
+                height: 22px;
+                font-size: 0.7em;
+            }
+        }
+        @media (max-width: 768px) {
+    .modal-content {
+        margin: 1% auto;
+        padding: 20px;
+        width: 98%;
+        max-height: 95vh;
+    }
+    
+    .celebration-title {
+        font-size: 2em !important;
+    }
+    
+    .celebration-text {
+        font-size: 1.2em !important;
+    }
+    
+    .song-text {
+        font-size: 1em !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .celebration-title {
+        font-size: 1.8em !important;
+    }
+    
+    .celebration-text {
+        font-size: 1.1em !important;
+    }
+    
+    .celebration-organ {
+        font-size: 3em !important;
+    }
+}
+.intro-button {
+    background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+    color: white;
+    border: none;
+    padding: 25px 50px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 1.6em;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    margin-top: 30px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.intro-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+
+.explanation-screen {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e6 100%);
+    border-radius: 25px;
+    padding: 40px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 3px solid #fd79a8;
+    display: none;
+}
+
+.explanation-title {
+    font-size: 2.2em;
+    color: #d63031;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.typewriter-text {
+    font-size: 1.1em;
+    color: #333;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    text-align: right;
+    direction: rtl;
+    min-height: 5px;
+}
+
+.typewriter-text-char {
+    opacity: 0;
+    transition: opacity 0.05s ease;
+}
+
+.typewriter {
+    border-right: 3px solid #fd79a8;
+    padding-left: 10px;
+    animation: blink 1s infinite;
+    display: inline-block;
+}
+
+@keyframes blink {
+    50% { border-right-color: transparent; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.continue-button {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    color: white;
+    border: none;
+    padding: 18px 35px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.3em;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    margin-top: 25px;
+}
+
+.continue-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">חוקרי הגוף 🧠</h1>
+            <p class="subtitle">המסע שלך לתוך גוף האדם</p>
+        </div>
+
+<div class="instructions" id="instructions">
+    <div class="instructions-title">🎯 ברוכים הבאים לחוקרי הגוף!</div>
+
+    <button class="intro-button" onclick="showExplanation()">🚀 לחצו להתחלה</button>
+</div>
+
+<div class="explanation-screen" id="explanationScreen">
+    <div class="explanation-title">🎯 איך משחקים?</div>
+    <div class="typewriter-text" id="typewriterText"></div>
+    <button class="continue-button" onclick="startGame()" style="display: none;" id="continueButton">בואו נתחיל לשחק! 🎲</button>
+</div>
+        
+        <div class="game-board" id="gameBoard" style="display: none;"></div>
+    </div>
+
+    <div class="dice-container" id="diceContainer" style="display: none;">
+        <div class="dice" id="dice" onclick="rollDice()">🎲</div>
+        <div class="dice-label">לחץ להטלה</div>
+    </div>
+
+    <!-- Modal for questions and bonuses -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+<script>
+    // Game state
+    let playerPosition = 0;
+    let playerElement = null;
+    let gameEnded = false;
+    let gameStarted = false;
+    let previousPlayerPosition = 0;
+
+    // Questions data organized by organ type
+    const questions = {
+        blue: [ // כליות
+            {
+                question: "הידעת? כמה שוקלת כליה של ילד?",
+                answers: ["40–60 גרם", "110–200 גרם", "500 גרם"],
+                correct: 0,
+                organ: "💧"
+            },
+            {
+                question: "הידעת? מה תפקיד הכליות בגוף?",
+                answers: ["לעכל אוכל", "לסנן רעלים מהדם וליצור שתן", "לנשום אוויר"],
+                correct: 1,
+                organ: "💧"
+            },
+            {
+                question: "הידעת? איפה נמצאות הכליות בגוף?",
+                answers: ["בחזה", "בבטן התחתונה", "בראש"],
+                correct: 1,
+                organ: "💧"
+            },
+            {
+                question: "הידעת? כמה כליות יש לאדם בריא?",
+                answers: ["שתיים", "שלוש", "אחת"],
+                correct: 0,
+                organ: "💧"
+            }
+        ],
+        yellow: [ // ריאות
+            {
+                question: "הידעת? כמה ריאות יש לאדם?",
+                answers: ["אחת", "שתיים", "שלוש"],
+                correct: 1,
+                organ: "🫁"
+            },
+            {
+                question: "הידעת? מה קורה כשאנחנו שואפים אוויר?",
+                answers: ["האוויר עובר ישר ללב", "האוויר נכנס לריאות, שם נקלט החמצן", "האוויר עובר לקיבה"],
+                correct: 1,
+                organ: "🫁"
+            },
+            {
+                question: "הידעת? איפה נמצאות הריאות?",
+                answers: ["בבטן", "בחזה", "ברגליים"],
+                correct: 1,
+                organ: "🫁"
+            },
+            {
+                question: "הידעת? מה עושות הריאות כשאנחנו נושפים החוצה?",
+                answers: ["מוציאות פחמן דו-חמצני", "מוציאות מים", "מוציאות מזון"],
+                correct: 0,
+                organ: "🫁"
+            }
+        ],
+        pink: [ // מעיים
+            {
+                question: "הידעת? מה עושה המעי הדק?",
+                answers: ["שואף אוויר", "סופג את המזון שהתעכל בקיבה", "מסנן רעלים"],
+                correct: 1,
+                organ: "🦠"
+            },
+            {
+                question: "הידעת? כמה זמן המזון נשאר במעיים?",
+                answers: ["דקה אחת", "כמה שעות ואפילו יותר מיום", "10 שניות"],
+                correct: 1,
+                organ: "🦠"
+            },
+            {
+                question: "הידעת? איפה נמצאים המעיים?",
+                answers: ["בראש", "בבטן", "בידיים"],
+                correct: 1,
+                organ: "🦠"
+            },
+            {
+                question: "הידעת? מה קורה למזון במעיים?",
+                answers: ["הוא הופך לשתן", "הוא נספג לדם", "הוא הופך לאוויר"],
+                correct: 1,
+                organ: "🦠"
+            }
+        ],
+        purple: [ // אוזן
+            {
+                question: "הידעת? מה תפקיד האוזן הפנימית?",
+                answers: ["לנשום", "לשמור על שיווי משקל", "לעכל אוכל"],
+                correct: 1,
+                organ: "👂"
+            },
+            {
+                question: "הידעת? כמה אוזניים יש לנו?",
+                answers: ["אחת", "שלוש", "שתיים"],
+                correct: 2,
+                organ: "👂"
+            },
+            {
+                question: "הידעת? מה עוזר לנו לשמוע קולות?",
+                answers: ["האוזן", "האף", "הפה"],
+                correct: 0,
+                organ: "👂"
+            },
+            {
+                question: "הידעת? איפה נמצאת האוזן הפנימית?",
+                answers: ["בחוץ", "בתוך הראש", "ברגל"],
+                correct: 1,
+                organ: "👂"
+            }
+        ],
+        green: [ // עין
+            {
+                question: "הידעת? איזה חלק בעין נותן לה את הצבע?",
+                answers: ["האישון", "הקשתית", "הרשתית"],
+                correct: 1,
+                organ: "👁️"
+            },
+            {
+                question: "הידעת? למה יש לנו שתי עיניים?",
+                answers: ["כדי לשמוע טוב יותר", "כדי לראות עומק ולזהות מרחקים", "כדי להריח ריחות"],
+                correct: 1,
+                organ: "👁️"
+            },
+            {
+                question: "הידעת? כמה עיניים יש לאדם?",
+                answers: ["שתיים", "שלוש", "אחת"],
+                correct: 0,
+                organ: "👁️"
+            },
+            {
+                question: "הידעת? מה עוזר לנו לראות?",
+                answers: ["האוזניים", "העיניים", "האף"],
+                correct: 1,
+                organ: "👁️"
+            }
+        ],
+        orange: [ // גרון
+            {
+                question: "הידעת? מה עובר בגרון כשאנחנו אוכלים?",
+                answers: ["האוכל עובר ישר ללב", "האוכל עובר בגרון אל הוושט ומשם לקיבה", "האוכל עובר דרך הריאות"],
+                correct: 1,
+                organ: "🗣️"
+            },
+            {
+                question: "הידעת? למה יש לנו מיתרי קול בגרון?",
+                answers: ["כדי ללעוס טוב יותר", "כדי להוציא קולות ולדבר", "כדי לשמוע אחרים"],
+                correct: 1,
+                organ: "🗣️"
+            },
+            {
+                question: "הידעת? איפה נמצא הגרון?",
+                answers: ["בצוואר", "ברגל", "ביד"],
+                correct: 0,
+                organ: "🗣️"
+            },
+            {
+                question: "הידעת? דרך מה עובר האוכל מהפה לקיבה?",
+                answers: ["דרך האף", "דרך הגרון", "דרך האוזן"],
+                correct: 1,
+                organ: "🗣️"
+            }
+        ],
+        black: [ // מוח
+            {
+                question: "הידעת? איפה נמצא המוח?",
+                answers: ["בבטן", "בראש", "ברגליים"],
+                correct: 1,
+                organ: "🧠"
+            },
+            {
+                question: "הידעת? מה עושה המוח?",
+                answers: ["עוזר לנו לחשוב", "עוזר לנו לאכול", "עוזר לנו לישון"],
+                correct: 0,
+                organ: "🧠"
+            },
+            {
+                question: "הידעת? המוח שולט על מה?",
+                answers: ["רק על הידיים", "על כל הגוף", "רק על הרגליים"],
+                correct: 1,
+                organ: "🧠"
+            },
+            {
+                question: "הידעת? המוח עוזר לנו לזכור דברים?",
+                answers: ["כן", "לא", "רק בלילה"],
+                correct: 0,
+                organ: "🧠"
+            }
+        ]
+    };
+
+    // Board layout - exactly matching your image (40 cells in rectangular path)
+    const boardCells = [
+        // Bottom row (cells 1-8, left to right)
+        { type: 'start', color: 'start', text: 'Start', organ: '🚀', number: '1' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '2' },
+        { type: 'question', color: 'green', text: '🤔 הידעת?', organ: '👁️', number: '3' },
+        { type: 'heart', color: 'green', text: '❤️', organ: '💖', number: '4' },
+        { type: 'question', color: 'blue', text: '🤔 הידעת?', organ: '💧', number: '5' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '6' },
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '7' },
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '8' },
+        
+        // Right column (cells 9-16, bottom to top)
+        { type: 'question', color: 'black', text: '🧠 הידעת?', organ: '🧠', number: '9' },
+        { type: 'heart', color: 'green', text: '❤️', organ: '💖', number: '10' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '11' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '12' },
+        { type: 'question', color: 'green', text: '🤔 הידעת?', organ: '👁️', number: '13' },
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '14' },
+        { type: 'question', color: 'green', text: '🤔 הידעת?', organ: '👁️', number: '15' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '16' },
+        
+        // Top row (cells 17-24, right to left)  
+        { type: 'question', color: 'black', text: '🧠 הידעת?', organ: '🧠', number: '17' },
+        { type: 'heart', color: 'green', text: '❤️', organ: '💖', number: '18' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '19' },
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '20' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '21' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '22' },
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '23' },
+        { type: 'question', color: 'blue', text: '🤔 הידעת?', organ: '💧', number: '24' },
+        
+        // Left column (cells 25-32, top to bottom)
+        { type: 'question', color: 'green', text: '🤔 הידעת?', organ: '👁️', number: '25' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '26' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '27' },
+        { type: 'heart', color: 'green', text: '❤️', organ: '💖', number: '28' },
+        { type: 'question', color: 'blue', text: '🤔 הידעת?', organ: '💧', number: '29' },
+        { type: 'question', color: 'black', text: '🧠 הידעת?', organ: '🧠', number: '30' },
+        { type: 'question', color: 'yellow', text: '🤔 הידעת?', organ: '🫁', number: '31' },
+        { type: 'question', color: 'pink', text: '🤔 הידעת?', organ: '🦠', number: '32' },
+        
+        // Inner cells
+        { type: 'question', color: 'purple', text: '🤔 הידעת?', organ: '👂', number: '33' },
+        { type: 'finish', color: 'finish', text: 'הגעת לסיום!', organ: '🏆', number: '34' }
+    ];
+
+    function startGame() {
+        gameStarted = true;
+        document.getElementById('instructions').style.display = 'none';
+        document.getElementById('gameBoard').style.display = 'grid';
+        document.getElementById('diceContainer').style.display = 'flex';
+        
+        // הפעלת הקראה קולית להסבר
+        playVoice("voice.wav");
+        
+        initializeGame();
+    }
+
+    function initializeGame() {
+        const gameBoard = document.getElementById('gameBoard');
+        gameBoard.innerHTML = '';
+        
+        boardCells.forEach((cell, index) => {
+            const cellDiv = document.createElement('div');
+            cellDiv.className = `cell ${cell.color}`;
+            cellDiv.id = `cell-${index}`;
+            // הסרת האפשרות ללחוץ על התאים
+            
+            cellDiv.innerHTML = `
+                <div class="cell-number">${cell.number}</div>
+                <div class="cell-organ">${cell.organ}</div>
+                <div class="cell-text">${cell.text}</div>
+            `;
+            
+            gameBoard.appendChild(cellDiv);
+        });
+        
+        // Create player piece
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.innerHTML = '👤';
+        player.id = 'player';
+        playerElement = player;
+        document.getElementById('cell-0').appendChild(player);
+    }
+
+    function rollDice() {
+        if (gameEnded || !gameStarted) return;
+        
+        const dice = document.getElementById('dice');
+        dice.classList.add('rolling');
+        
+        setTimeout(() => {
+            const roll = Math.floor(Math.random() * 6) + 1;
+            dice.innerHTML = roll;
+            dice.classList.remove('rolling');
+            
+            movePlayer(roll);
+        }, 1000);
+    }
+
+    function movePlayer(steps) {
+        const previousPosition = playerPosition; // שמור מיקום קודם
+        const newPosition = Math.min(playerPosition + steps, boardCells.length - 1);
+        
+        // Remove player from current position
+        if (playerElement.parentNode) {
+            playerElement.parentNode.removeChild(playerElement);
+        }
+        
+        // Add player to new position with animation
+        playerPosition = newPosition;
+        previousPlayerPosition = previousPosition; // שמור למקרה של טעות
+        const targetCell = document.getElementById(`cell-${newPosition}`);
+        targetCell.appendChild(playerElement);
+        
+        // Add movement animation
+        playerElement.style.animation = 'playerMove 0.5s ease';
+        setTimeout(() => {
+            playerElement.style.animation = '';
+        }, 500);
+        
+        // Check if reached the end
+        if (newPosition === boardCells.length - 1) {
+            setTimeout(() => showCelebration(), 800);
+            return;
+        }
+        
+        // Handle cell action
+        setTimeout(() => {
+            handleCellAction(newPosition);
+        }, 600);
+    }
+
+    function movePlayerBack() {
+        // Remove player from current position
+        if (playerElement.parentNode) {
+            playerElement.parentNode.removeChild(playerElement);
+        }
+        
+        // Return to previous position
+        playerPosition = previousPlayerPosition;
+        const targetCell = document.getElementById(`cell-${playerPosition}`);
+        targetCell.appendChild(playerElement);
+        
+        // Add movement animation
+        playerElement.style.animation = 'playerMove 0.5s ease';
+        setTimeout(() => {
+            playerElement.style.animation = '';
+        }, 500);
+    }
+
+    function handleCellAction(cellIndex) {
+        const cell = boardCells[cellIndex];
+        
+        if (cell.type === 'question') {
+            showQuestion(cell.color);
+        } else if (cell.type === 'heart') {
+            showBonus();
+        }
+        // אם זה לא שאלה או בונוס, אין צורך לעשות כלום - הקובייה תהיה מוכנה לתור הבא
+    }
+
+    function showQuestion(color) {
+        const questionList = questions[color];
+        if (!questionList || questionList.length === 0) {
+            return;
+        }
+        
+        const question = questionList[Math.floor(Math.random() * questionList.length)];
+        
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="question-organ">${question.organ}</div>
+            <h2 class="question-title">🤔 הידעת?</h2>
+            <p class="question-text">${question.question}</p>
+            <div class="answers">
+                ${question.answers.map((answer, index) => 
+                    `<div class="answer" onclick="selectAnswer(${index}, ${question.correct})">${answer}</div>`
+                ).join('')}
+            </div>
+        `;
+        
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function selectAnswer(selected, correct) {
+        const answers = document.querySelectorAll('.answer');
+        
+        // Disable all answers
+        answers.forEach(answer => {
+            answer.style.pointerEvents = 'none';
+        });
+        
+        // Mark correct and wrong answers
+        answers.forEach((answer, index) => {
+            if (index === correct) {
+                answer.classList.add('correct');
+            } else if (index === selected && selected !== correct) {
+                answer.classList.add('wrong');
+            }
+        });
+        
+        setTimeout(() => {
+            if (selected === correct) {
+                showCorrectAnswer();
+            } else {
+                showWrongAnswer();
+            }
+        }, 2000);
+    }
+
+    function showCorrectAnswer() {
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="celebration">
+                <div class="celebration-organ">🎉</div>
+                <div class="celebration-title">כל הכבוד!</div>
+                <div class="celebration-text">תשובה נכונה! אתה באמת יודע על גוף האדם!</div>
+                <button class="action-button" onclick="closeModal()">המשך במשחק</button>
+            </div>
+        `;
+    }
+
+    function showWrongAnswer() {
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="celebration">
+                <div class="celebration-organ">😊</div>
+                <div class="celebration-title">אפשר לנסות שוב</div>
+                <div class="celebration-text">התשובה לא נכונה, אבל זה בסדר! נמשיך ללמוד יחד!</div>
+                <button class="action-button" onclick="closeModalWrong()">המשך במשחק</button>
+            </div>
+        `;
+    }
+
+function closeModalWrong() {
+    document.getElementById('modal').style.display = 'none';
+    // החזרת אייקון הקובייה
+    document.getElementById('dice').innerHTML = '🎲';
+    // החזר את השחקן למיקום הקודם
+    movePlayerBack();
+}
+
+    function showBonus() {
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="bonus-card">
+                <div class="bonus-organ">❤️</div>
+                <div class="bonus-title">הידד!!</div>
+                <div class="bonus-text">התקדם חמישה צעדים קדימה!</div>
+                <button class="action-button" onclick="applyBonus()">יאללה קדימה!</button>
+            </div>
+        `;
+        
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function applyBonus() {
+        closeModal();
+        setTimeout(() => {
+            movePlayer(5);
+        }, 500);
+    }
+
+    function createFireworks() {
+        const fireworksContainer = document.createElement('div');
+        fireworksContainer.id = 'fireworks';
+        fireworksContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        document.body.appendChild(fireworksContainer);
+        
+        for (let i = 0; i < 15; i++) {
+            setTimeout(() => {
+                createSingleFirework(fireworksContainer);
+            }, i * 200);
+        }
+        
+        setTimeout(() => {
+            if (fireworksContainer.parentNode) {
+                fireworksContainer.parentNode.removeChild(fireworksContainer);
+            }
+        }, 10000);
+    }
+
+    function createSingleFirework(container) {
+        const firework = document.createElement('div');
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight * 0.7;
+        
+        firework.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: ${getRandomColor()};
+            animation: explode 1.5s ease-out forwards;
+        `;
+        
+        container.appendChild(firework);
+        
+        for (let i = 0; i < 12; i++) {
+            const spark = document.createElement('div');
+            const angle = (i * 30) * Math.PI / 180;
+            const distance = 50 + Math.random() * 30;
+            
+            spark.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background: ${getRandomColor()};
+                animation: spark 1.5s ease-out forwards;
+                --dx: ${Math.cos(angle) * distance}px;
+                --dy: ${Math.sin(angle) * distance}px;
+            `;
+            
+            container.appendChild(spark);
+            
+            setTimeout(() => {
+                if (spark.parentNode) {
+                    spark.parentNode.removeChild(spark);
+                }
+            }, 1500);
+        }
+        
+        setTimeout(() => {
+            if (firework.parentNode) {
+                firework.parentNode.removeChild(firework);
+            }
+        }, 1500);
+    }
+
+    function getRandomColor() {
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+function showCelebration() {
+    gameEnded = true;
+    
+    // הפעלת הזיקוקים
+    createFireworks();
+    
+    // הפעלת מוזיקת ניצחון
+    playVoice("champions.mp3");
+    
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
+        <div class="celebration">
+            <div class="celebration-organ">🏆</div>
+            <div class="celebration-title" style="font-size: 2.5em;">מדהים!</div>
+            <div class="celebration-text" style="font-size: 1.4em;">סיימת את המסע בגוף האדם!</div>
+            <div class="celebration-organ">🎖️</div>
+            <div style="font-size: 1.6em; color: #00b894; margin: 20px 0; font-weight: bold; line-height: 1.3;">
+                כל הכבוד לכם! אלופים!<br>
+                סיימתם את החלק הזה של הפעילות
+            </div>
+            <div style="font-size: 1.3em; color: #666; margin-top: 15px; line-height: 1.3;">
+                כעת נמתין לסיום שאר המשתתפים<br>
+                ונמשיך בשיעור
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modal').style.display = 'block';
+}
+
+    function playVoice(src) {
+        try {
+            const audio = new Audio(src);
+            audio.volume = 0.8;
+            audio.play().catch(e => console.log('שגיאה בהפעלת שמע:', e));
+        } catch (e) {
+            console.log('קובץ השמע לא נמצא:', src);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('dice').innerHTML = '🎲';
+    }
+
+    // הסרת אפשרות לסגור מודל בלחיצה מחוץ לו או במקש Escape
+    
+    // Add keyboard support - רק רווח להטלת קובייה
+    document.addEventListener('keydown', function(event) {
+        if (event.code === 'Space') {
+            event.preventDefault();
+            rollDice();
+        }
+    });
+    // הוסף אחרי const boardCells
+const explanationText = `🎲 לחצו על הקובייה כדי להטיל ולהתקדם במסלול
+
+🤔 ענו על שאלות מעניינות על גוף האדם
+
+❤️ קבלו בונוסים מיוחדים בדרך
+
+🏆 הגיעו לסיום והפכו לחוקרי גוף האדם מוסמכים!
+
+✨ אם התשובה נכונה - תמשיכו קדימה
+
+⚠️ אם התשובה שגויה - תחזרו למקום הקודם
+
+🎉 בואו נתחיל את המסע המרתק!`;
+
+function showExplanation() {
+    document.getElementById('instructions').style.display = 'none';
+    document.getElementById('explanationScreen').style.display = 'block';
+    
+    // הפעלת הקראה קולית מיד
+    playVoice("voice.wav");
+    
+    // התחלת אפקט Typewriter עם איחור של חצי שניה (רק הכתיבה)
+    setTimeout(() => {
+        typeWriter();
+    }, 1000);
+}
+
+function typeWriter() {
+    const container = document.getElementById('typewriterText');
+    const continueBtn = document.getElementById('continueButton');
+    
+    const textParts = [
+        "🎲 לחצו על הקובייה כדי להטיל אותה ולהתקדם במסלול",
+        "🤔 ענו על שאלות מעניינות על גוף האדם", 
+        "❤️ קבלו בונוסים מיוחדים בדרך",
+        "🏆 הגיעו לסיום והפכו לחוקרים מוסמכים!",
+
+    ];
+    
+    let currentPartIndex = 0;
+    
+    function createNextParagraph() {
+        if (currentPartIndex >= textParts.length) {
+            // הצג את כפתור המשך כשכל הטקסט הוצג
+            continueBtn.style.display = 'inline-block';
+            continueBtn.style.animation = 'fadeIn 0.5s ease';
+            return;
+        }
+        
+        const paragraph = document.createElement('p');
+        paragraph.className = 'typewriter-text';
+        container.appendChild(paragraph);
+        
+        const text = textParts[currentPartIndex];
+        const chars = text.split('');
+        
+        // יצירת אלמנטים נפרדים לכל תו
+        chars.forEach((char, i) => {
+            const span = document.createElement('span');
+            span.className = 'typewriter-text-char';
+            span.textContent = char;
+            span.style.opacity = '0';
+            paragraph.appendChild(span);
+        });
+        
+        // הצגת תווים אחד אחרי השני
+        const spans = paragraph.querySelectorAll('.typewriter-text-char');
+        let charIndex = 0;
+        
+        const typingInterval = setInterval(() => {
+            if (charIndex < spans.length) {
+                spans[charIndex].style.opacity = '1';
+                charIndex++;
+            } else {
+                clearInterval(typingInterval);
+                currentPartIndex++;
+                setTimeout(createNextParagraph, 300); // מעבר מהיר יותר בין פסקאות
+            }
+        }, 70); // מהירות כתיבה
+    }
+    
+    createNextParagraph();
+}
+// עדכן את הפונקציה startGame
+function startGame() {
+    gameStarted = true;
+    document.getElementById('explanationScreen').style.display = 'none';
+    document.getElementById('gameBoard').style.display = 'grid';
+    document.getElementById('diceContainer').style.display = 'flex';
+    
+    initializeGame();
+}
+</script>
+</body>
+</html>

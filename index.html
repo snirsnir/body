@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טכנו-לייב</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 400px;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .join-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .join-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Main Screen */
+        .main-screen {
+            display: none;
+            height: 100vh;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .score {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .content-area {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        .chat-panel {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            text-align: center;
+            padding: 50px;
+            font-size: 3em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .countdown-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Live Stream */
+        .live-stream {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5em;
+            position: relative;
+        }
+
+        .live-indicator {
+            background: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Activity Frame */
+        .activity-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Message styles */
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #f0f0f0;
+            font-size: 14px;
+        }
+
+        .message.system {
+            background: #e3f2fd;
+            color: #1976d2;
+            font-style: italic;
+        }
+
+        .message-author {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Video loading indicator */
+        .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-area {
+                flex-direction: column;
+            }
+            
+            .chat-panel {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .main-content {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="logo">🎯 טכנו-לייב</div>
+            <div class="welcome-text">ברוכים הבאים לסשן הלימוד האינטראקטיבי!</div>
+            <input type="text" class="name-input" id="nameInput" placeholder="הכנס את שמך כאן">
+            <button class="join-btn" id="joinBtn" onclick="joinSession()">הצטרף לסשן</button>
+            <div id="sessionStatus" style="margin-top: 20px; font-size: 0.9em; color: #666;"></div>
+        </div>
+    </div>
+
+    <!-- Main Screen -->
+    <div class="main-screen" id="mainScreen">
+        <div class="header">
+            <div class="session-info">
+                <div class="logo">🎯 טכנו-לייב</div>
+                <div class="live-indicator" id="liveIndicator" style="display: none;">🔴 שידור חי</div>
+            </div>
+            <div class="user-info">
+                <span id="userName"></span>
+                <div class="score" id="userScore">0 נקודות</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="main-content" id="mainContent">
+                <!-- Countdown Timer -->
+                <div class="countdown" id="countdownTimer" style="display: none;">
+                    <div class="countdown-text">הסשן מתחיל בעוד:</div>
+                    <div id="countdown">05:00</div>
+                </div>
+                
+                <!-- Live Stream -->
+                <div class="live-stream" id="liveStream" style="display: none;">
+                    <video id="studentVideo" autoplay muted playsinline controls 
+                           style="width: 100%; height: 100%; object-fit: cover; background: #222;">
+                    </video>
+                    <div class="video-loading" id="videoLoading">
+                        🔄 מתחבר לשידור...
+                    </div>
+                </div>
+                
+                <!-- Activity Frame -->
+                <iframe class="activity-frame" id="activityFrame" style="display: none;"></iframe>
+            </div>
+            
+            <div class="chat-panel" id="chatPanel">
+                <div class="chat-header">💬 צ'אט</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="כתוב הודעה..." onkeypress="handleChatEnter(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfQaiAEs__1bQ1u6eO_W0kBjdo5yOCGmw",
+            authDomain: "technolive-d5b92.firebaseapp.com",
+            databaseURL: "https://technolive-d5b92-default-rtdb.firebaseio.com",
+            projectId: "technolive-d5b92",
+            storageBucket: "technolive-d5b92.firebasestorage.app",
+            messagingSenderId: "999834099575",
+            appId: "1:999834099575:web:58e8bb95b47f431159cb72"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Global Variables
+        let sessionId = null;
+        let participantId = null;
+        let userName = null;
+        let userScore = 0;
+        
+        // WebRTC Variables
+        let peerConnection = null;
+        let remoteStream = null;
+        let offerProcessed = false; // נמנע מעיבוד כפול
+
+        // WebRTC Configuration
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+
+        // Listen to WebRTC stream
+function listenToVideoStream() {
+    console.log('🎥 מתחיל להאזין לשידור וידיאו...');
+    
+    // האזן לoffers ספציפיים
+    database.ref(`sessions/${sessionId}/webrtc/offers/${participantId}`).on('value', async (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.offer && !offerProcessed) {
+            console.log('📨 התקבל offer אישי');
+            offerProcessed = true;
+            await handleOffer(data.offer);
+        }
+    });
+    
+    // האזן ל-ICE candidates ספציפיים
+// האזן ל-ICE candidates ספציפיים - תיקון
+database.ref(`sessions/${sessionId}/webrtc/admin-candidates/${participantId}`).on('child_added', async (snapshot) => {
+    const candidateData = snapshot.val();
+    
+    if (peerConnection && candidateData && peerConnection.remoteDescription) {
+        try {
+            // בדוק שהcandidate תקין
+            if (candidateData.candidate && (candidateData.sdpMid !== null || candidateData.sdpMLineIndex !== null)) {
+                const iceCandidate = new RTCIceCandidate({
+                    candidate: candidateData.candidate,
+                    sdpMid: candidateData.sdpMid,
+                    sdpMLineIndex: candidateData.sdpMLineIndex
+                });
+                
+                await peerConnection.addIceCandidate(iceCandidate);
+                console.log('✅ ICE candidate נוסף בהצלחה');
+            } else {
+                console.warn('⚠️ ICE candidate לא תקין:', candidateData);
+            }
+        } catch (error) {
+            console.error('❌ שגיאה בהוספת ICE candidate:', error);
+        }
+    } else {
+        console.warn('⚠️ PeerConnection לא מוכן, מחכה...');
+    }
+});
+}
+
+        async function handleOffer(offer) {
+            try {
+                console.log('🔄 מעבד WebRTC offer...');
+                
+                // סגור חיבור קיים אם יש
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+                
+                // Show loading indicator
+                document.getElementById('videoLoading').style.display = 'block';
+                
+                // Initialize peer connection
+                peerConnection = new RTCPeerConnection(rtcConfig);
+                
+                // Handle connection state changes
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('🔗 מצב חיבור:', peerConnection.connectionState);
+                    if (peerConnection.connectionState === 'connected') {
+                        console.log('✅ WebRTC מחובר בהצלחה!');
+                        document.getElementById('videoLoading').style.display = 'none';
+                    } else if (peerConnection.connectionState === 'failed') {
+                        console.log('❌ WebRTC נכשל, מנסה שוב...');
+                        setTimeout(() => {
+                            offerProcessed = false;
+                            handleOffer(offer);
+                        }, 3000);
+                    }
+                };
+                
+                // Handle ICE candidates
+// Handle ICE candidates - תיקון שליחה
+peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+        console.log('📤 שולח ICE candidate');
+        
+        // ודא שהcandidate תקין לפני שליחה
+        const candidate = event.candidate;
+        if (candidate.candidate && (candidate.sdpMid !== null || candidate.sdpMLineIndex !== null)) {
+            database.ref(`sessions/${sessionId}/webrtc/student-candidates`).push({
+                candidate: {
+                    candidate: candidate.candidate,
+                    sdpMid: candidate.sdpMid,
+                    sdpMLineIndex: candidate.sdpMLineIndex
+                },
+                participantId: participantId,
+                timestamp: Date.now()
+            });
+        } else {
+            console.warn('⚠️ ICE candidate לא תקין, מדלג...');
+        }
+    }
+};
+                
+                // Handle incoming stream - הוסף מטפל אחד בלבד
+                peerConnection.ontrack = (event) => {
+                    console.log('📺 התקבל זרם וידיאו מרוחק');
+                    
+                    if (event.streams && event.streams[0]) {
+                        remoteStream = event.streams[0];
+                        const videoElement = document.getElementById('studentVideo');
+                        
+                        // Clear any existing srcObject
+                        if (videoElement.srcObject) {
+                            videoElement.srcObject.getTracks().forEach(track => track.stop());
+                        }
+                        
+                        // Set new stream
+                        videoElement.srcObject = remoteStream;
+                        
+                        // Configure video element
+                        videoElement.autoplay = true;
+                        videoElement.playsInline = true;
+                        videoElement.muted = true;
+                        
+                        // Handle video events
+                        videoElement.onloadedmetadata = () => {
+                            console.log('✅ מטא-נתונים נטענו, מנסה להפעיל וידיאו...');
+                            
+                            videoElement.play().then(() => {
+                                console.log('🎬 וידיאו מופעל בהצלחה!');
+                                document.getElementById('videoLoading').style.display = 'none';
+                            }).catch(error => {
+                                console.error('❌ שגיאה בהפעלת וידיאו:', error);
+                                // Try user interaction
+                                videoElement.addEventListener('click', () => {
+                                    videoElement.play();
+                                });
+                            });
+                        };
+                        
+                        videoElement.onerror = (error) => {
+                            console.error('❌ שגיאה בוידיאו:', error);
+                        };
+                        
+                        // Force play after delay
+                        setTimeout(() => {
+                            if (videoElement.readyState >= 2 && videoElement.paused) {
+                                console.log('🔄 מנסה להפעיל וידיאו שוב...');
+                                videoElement.play().catch(console.warn);
+                            }
+                        }, 2000);
+                    }
+                };
+                
+                // Set remote description
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                console.log('📝 Remote description נקבע');
+                
+                // Create answer
+                const answer = await peerConnection.createAnswer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: true
+                });
+                
+                await peerConnection.setLocalDescription(answer);
+                console.log('📝 Local description נקבע');
+                
+                // Send answer via Firebase
+// Send answer via Firebase - לנתיב הספציפי
+await database.ref(`sessions/${sessionId}/webrtc/answers/${participantId}`).set({
+    answer: answer,
+    timestamp: Date.now()
+});
+                
+                console.log('📤 WebRTC answer נשלח');
+                
+            } catch (error) {
+                console.error('❌ שגיאה בטיפול בWebRTC offer:', error);
+                document.getElementById('videoLoading').style.display = 'none';
+                
+                // Retry after delay
+                setTimeout(() => {
+                    console.log('🔄 מנסה שוב...');
+                    offerProcessed = false;
+                }, 5000);
+            }
+        }
+
+        // Get session ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionId = urlParams.get('session');
+
+        if (!sessionId) {
+            document.getElementById('sessionStatus').innerHTML = 
+                '<span style="color: red;">❌ קישור לא תקין - אין מזהה סשן</span>';
+            document.getElementById('joinBtn').disabled = true;
+        } else {
+            document.getElementById('sessionStatus').innerHTML = 
+                `<span style="color: green;">✅ מחובר לסשן: ${sessionId}</span>`;
+            checkSessionStatus();
+        }
+
+        // Check if session exists
+        function checkSessionStatus() {
+            database.ref(`sessions/${sessionId}`).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const session = snapshot.val();
+                    document.getElementById('sessionStatus').innerHTML += 
+                        '<br><span style="color: blue;">הסשן פעיל ומוכן!</span>';
+                } else {
+                    document.getElementById('sessionStatus').innerHTML = 
+                        '<span style="color: orange;">⏳ ממתינים למדריך להתחיל את הסשן...</span>';
+                }
+            });
+        }
+
+        // Join Session
+        function joinSession() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('נא להכניס שם');
+                return;
+            }
+            
+            if (!sessionId) {
+                alert('שגיאה: אין מזהה סשן');
+                return;
+            }
+
+            userName = name;
+            participantId = generateParticipantId();
+            
+            // Add participant to Firebase
+            database.ref(`sessions/${sessionId}/participants/${participantId}`).set({
+                name: userName,
+                score: 0,
+                joinedAt: Date.now()
+            }).then(() => {
+                // Switch to main screen
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainScreen').style.display = 'block';
+                document.getElementById('userName').textContent = userName;
+                
+                // Start listening to session updates
+                listenToSessionUpdates();
+                
+                // Add system message
+                addChatMessage('המערכת', `${userName} הצטרף לסשן`, 'system');
+            }).catch((error) => {
+                console.error('שגיאה בהצטרפות:', error);
+                alert('שגיאה בהצטרפות לסשן');
+            });
+        }
+
+        // Generate unique participant ID
+        function generateParticipantId() {
+            return 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Listen to session updates
+        function listenToSessionUpdates() {
+            const sessionRef = database.ref(`sessions/${sessionId}`);
+            
+            // Listen to current activity changes
+            sessionRef.child('currentActivity').on('value', (snapshot) => {
+                const activity = snapshot.val();
+                updateMainContent(activity);
+            });
+            
+            // Listen to chat messages
+            sessionRef.child('chat').on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                displayChatMessage(message);
+            });
+            
+            // Listen to score updates
+            sessionRef.child(`participants/${participantId}/score`).on('value', (snapshot) => {
+                const score = snapshot.val() || 0;
+                userScore = score;
+                document.getElementById('userScore').textContent = `${score} נקודות`;
+            });
+            
+            // Listen to video stream
+            listenToVideoStream();
+        }
+
+        // Update main content based on activity
+        function updateMainContent(activity) {
+            const countdownTimer = document.getElementById('countdownTimer');
+            const liveStream = document.getElementById('liveStream');
+            const activityFrame = document.getElementById('activityFrame');
+            const liveIndicator = document.getElementById('liveIndicator');
+            
+            // Hide all content types
+            countdownTimer.style.display = 'none';
+            liveStream.style.display = 'none';
+            activityFrame.style.display = 'none';
+            liveIndicator.style.display = 'none';
+            
+            if (!activity) {
+                countdownTimer.style.display = 'flex';
+                return;
+            }
+            
+            switch (activity.type) {
+                case 'countdown':
+                    countdownTimer.style.display = 'flex';
+                    if (activity.endTime) {
+                        startCountdown(activity.endTime);
+                    }
+                    break;
+                    
+                case 'live':
+                    liveStream.style.display = 'flex';
+                    liveIndicator.style.display = 'block';
+                    // Reset offer processing for new live session
+                    offerProcessed = false;
+                    break;
+                    
+                case 'iframe':
+                    activityFrame.style.display = 'block';
+                    activityFrame.src = activity.url;
+                    break;
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown(endTime) {
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                const now = Date.now();
+                const timeLeft = endTime - now;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    countdownElement.textContent = '🎉 הסשן מתחיל!';
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+                countdownElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Handle chat enter
+        function handleChatEnter(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Send chat message
+        function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            addChatMessage(userName, message);
+            chatInput.value = '';
+        }
+
+        // Add chat message to Firebase
+        function addChatMessage(author, message, type = 'user') {
+            database.ref(`sessions/${sessionId}/chat`).push({
+                author: author,
+                message: message,
+                type: type,
+                timestamp: Date.now()
+            });
+        }
+
+        // Display chat message
+        function displayChatMessage(messageData) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageData.type}`;
+            
+            if (messageData.type === 'system') {
+                messageDiv.innerHTML = messageData.message;
+            } else {
+                messageDiv.innerHTML = 
+                    `<span class="message-author">${messageData.author}:</span> ${messageData.message}`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && participantId) {
+                // User left the session
+                database.ref(`sessions/${sessionId}/participants/${participantId}`).update({
+                    lastSeen: Date.now()
+                });
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Add click-to-play fallback
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoElement = document.getElementById('studentVideo');
+            videoElement.addEventListener('click', () => {
+                if (videoElement.paused) {
+                    videoElement.play().catch(console.warn);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

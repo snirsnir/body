@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טכנו-לייב - פאנל מדריך</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            direction: rtl;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Left Panel - Main Control */
+        .main-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .session-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Session Setup */
+        .session-setup {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Live Controls */
+        .live-controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .live-video {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* Navigation Controls */
+        .navigation-controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .current-activity {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #3498db;
+        }
+
+        /* Participants Panel */
+        .participants-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .participants-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .participants-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .participant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .participant-name {
+            font-weight: bold;
+        }
+
+        .participant-score {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        /* Right Panel - Timeline */
+        .timeline-panel {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #3498db;
+        }
+
+        .timeline-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: move;
+            transition: all 0.3s;
+            border-right: 4px solid transparent;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .timeline-item.current {
+            border-right-color: #3498db;
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .timeline-item.completed {
+            opacity: 0.6;
+            border-right-color: #27ae60;
+        }
+
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .item-type {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .add-item-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .status-live {
+            background: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        .status-ready {
+            background: #27ae60;
+        }
+
+        .status-waiting {
+            background: #f39c12;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Modal for adding activities */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .activity-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .activity-type {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .activity-type:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .activity-type.selected {
+            background: rgba(52, 152, 219, 0.3);
+            border: 2px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="header">
+                <div class="logo">🎯 טכנו-לייב - פאנל מדריך</div>
+                <div class="session-controls">
+                    <span id="sessionStatus">לא מחובר</span>
+                    <div class="status-indicator" id="statusIndicator"></div>
+                </div>
+            </div>
+
+            <!-- Session Setup -->
+            <div class="session-setup">
+                <h3 style="margin-bottom: 15px;">הגדרת סשן</h3>
+                <div class="form-group">
+                    <label class="form-label">מזהה סשן:</label>
+                    <input type="text" class="form-input" id="sessionIdInput" placeholder="לדוגמה: 2025-06-16-morning">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">זמן התחלה (דקות מהעת):</label>
+                    <input type="number" class="form-input" id="startTimeInput" value="5" min="1" max="60">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-warning" id="copyLinkBtn" onclick="copySessionLink()" style="display: none;">
+                        📋 העתק קישור
+                    </button>
+                    <button class="btn btn-primary" onclick="createSession()">צור סשן חדש</button>
+                    <button class="btn btn-success" onclick="loadSession()">טען סשן קיים</button>
+                </div>
+            </div>
+
+            <!-- Live Controls -->
+            <div class="live-controls" id="liveControls" style="display: none;">
+                <h3 style="margin-bottom: 15px;">בקרת שידור חי</h3>
+                <video class="live-video" id="liveVideo" autoplay muted style="width: 100%; height: 200px; object-fit: cover;"></video>
+                <div class="control-buttons">
+                    <button class="btn btn-danger" id="liveBtn" onclick="toggleLive()">🔴 התחל שידור חי</button>
+                    <button class="btn btn-warning" id="chatBtn" onclick="toggleChat()">💬 הפעל צ'אט</button>
+                </div>
+                <div id="streamStatus" style="text-align: center; margin-top: 10px; color: #bdc3c7;"></div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="navigation-controls" id="navigationControls" style="display: none;">
+                <h3 style="margin-bottom: 15px;">ניווט בפעילויות</h3>
+                <div class="current-activity" id="currentActivityDisplay">
+                    פעילות נוכחית: לא נבחרה
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn btn-primary" onclick="previousActivity()">⏮️ קודם</button>
+                    <button class="btn btn-success" onclick="nextActivity()">⏭️ הבא</button>
+                    <button class="btn btn-warning" onclick="showCountdown()">⏰ הצג שעון</button>
+                </div>
+            </div>
+
+            <!-- Participants Panel -->
+            <div class="participants-panel" id="participantsPanel" style="display: none;">
+                <div class="participants-header">
+                    <h3>משתתפים</h3>
+                    <span id="participantCount">0 משתתפים</span>
+                </div>
+                <div class="participants-list" id="participantsList">
+                    <!-- Participants will be loaded here -->
+                </div>
+                <button class="btn btn-primary" onclick="showLeaderboard()" style="width: 100%; margin-top: 15px;">
+                    🏆 הצג לוח תוצאות
+                </button>
+            </div>
+        </div>
+
+        <!-- Timeline Panel -->
+        <div class="timeline-panel">
+            <div class="timeline-header">
+                <h3>רצף הפעילויות</h3>
+                <div style="font-size: 0.9em; color: #bdc3c7; margin-top: 5px;">
+                    גרור לשינוי סדר
+                </div>
+            </div>
+            <div class="timeline-items" id="timelineItems">
+                <!-- Timeline items will be loaded here -->
+            </div>
+            <button class="btn btn-primary add-item-btn" onclick="showAddActivityModal()">
+                ➕ הוסף פעילות
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Activity Modal -->
+    <div class="modal" id="addActivityModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>הוסף פעילות חדשה</h3>
+                <button class="close-btn" onclick="closeAddActivityModal()">&times;</button>
+            </div>
+            
+            <div class="activity-types">
+                <div class="activity-type" onclick="selectActivityType('live')">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎥</div>
+                    <div>שידור חי</div>
+                </div>
+                <div class="activity-type" onclick="selectActivityType('iframe')">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎮</div>
+                    <div>משחק/פעילות</div>
+                </div>
+                <div class="activity-type" onclick="selectActivityType('question')">
+                    <div style="font-size: 2em; margin-bottom: 10px;">❓</div>
+                    <div>שאלה אמריקאית</div>
+                </div>
+                <div class="activity-type" onclick="selectActivityType('break')">
+                    <div style="font-size: 2em; margin-bottom: 10px;">☕</div>
+                    <div>הפסקה</div>
+                </div>
+            </div>
+
+            <div id="activityForm">
+                <div class="form-group">
+                    <label class="form-label">שם הפעילות:</label>
+                    <input type="text" class="form-input" id="activityName" placeholder="הכנס שם לפעילות">
+                </div>
+                
+                <div id="iframeForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">קישור לפעילות:</label>
+                        <input type="text" class="form-input" id="activityUrl" placeholder="games/game1.html">
+                    </div>
+                </div>
+
+                <div id="questionForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">שאלה:</label>
+                        <input type="text" class="form-input" id="questionText" placeholder="מה השאלה?">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">תשובות (הפרד בפסיקים):</label>
+                        <input type="text" class="form-input" id="questionAnswers" placeholder="תשובה 1, תשובה 2, תשובה 3, תשובה 4">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">תשובה נכונה (מספר):</label>
+                        <input type="number" class="form-input" id="correctAnswer" min="1" max="4" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">זמן לשאלה (שניות):</label>
+                        <input type="number" class="form-input" id="questionTime" value="30" min="10" max="60">
+                    </div>
+                </div>
+
+                <div id="breakForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">זמן הפסקה (דקות):</label>
+                        <input type="number" class="form-input" id="breakTime" value="5" min="1" max="30">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="addActivity()">הוסף</button>
+                <button class="btn" onclick="closeAddActivityModal()" style="background: #95a5a6;">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfQaiAEs__1bQ1u6eO_W0kBjdo5yOCGmw",
+            authDomain: "technolive-d5b92.firebaseapp.com",
+            databaseURL: "https://technolive-d5b92-default-rtdb.firebaseio.com",
+            projectId: "technolive-d5b92",
+            storageBucket: "technolive-d5b92.firebasestorage.app",
+            messagingSenderId: "999834099575",
+            appId: "1:999834099575:web:58e8bb95b47f431159cb72"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Global Variables
+        let currentSessionId = null;
+        let timeline = [];
+        let currentActivityIndex = -1;
+        let isLive = false;
+        let isChatEnabled = true;
+        let selectedActivityType = null;
+        let localStream = null;
+        let isStreaming = false;
+        
+        // WebRTC Variables
+        let peerConnections = new Map(); // Multiple connections for multiple students
+        let connectedStudents = new Set();
+        
+        // WebRTC Configuration
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+
+        // Initialize camera
+        async function initializeCamera() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 }
+                    }, 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+                document.getElementById('liveVideo').srcObject = localStream;
+                console.log('✅ מצלמה מוכנה בהצלחה');
+                updateStreamStatus('מצלמה מוכנה');
+            } catch (error) {
+                console.error('❌ שגיאה בגישה למצלמה:', error);
+                alert('לא ניתן לגשת למצלמה. בדוק הרשאות.');
+                updateStreamStatus('שגיאה במצלמה');
+            }
+        }
+
+        // Update stream status
+        function updateStreamStatus(status) {
+            document.getElementById('streamStatus').textContent = status;
+        }
+
+        // Create new session
+        function createSession() {
+            const sessionIdInput = document.getElementById('sessionIdInput');
+            const startTimeInput = document.getElementById('startTimeInput');
+            
+            const sessionId = sessionIdInput.value.trim();
+            const startMinutes = parseInt(startTimeInput.value) || 5;
+            
+            if (!sessionId) {
+                alert('נא להכניס מזהה סשן');
+                return;
+            }
+
+            currentSessionId = sessionId;
+            const startTime = Date.now() + (startMinutes * 60 * 1000);
+
+            // Create session in Firebase
+            database.ref(`sessions/${sessionId}`).set({
+                createdAt: Date.now(),
+                startTime: startTime,
+                status: 'waiting',
+                currentActivity: {
+                    type: 'countdown',
+                    endTime: startTime
+                },
+                chatEnabled: true,
+                timeline: [],
+                participants: {},
+                chat: {},
+                webrtc: {}
+            }).then(() => {
+                alert(`סשן נוצר בהצלחה!\nקישור למשתתפים: ${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${sessionId}`);
+                initializeSession();
+            }).catch((error) => {
+                console.error('שגיאה ביצירת סשן:', error);
+                alert('שגיאה ביצירת הסשן');
+            });
+        }
+
+        // Load existing session
+        function loadSession() {
+            const sessionIdInput = document.getElementById('sessionIdInput');
+            const sessionId = sessionIdInput.value.trim();
+            
+            if (!sessionId) {
+                alert('נא להכניס מזהה סשן');
+                return;
+            }
+
+            // Check if session exists
+            database.ref(`sessions/${sessionId}`).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    currentSessionId = sessionId;
+                    const sessionData = snapshot.val();
+                    timeline = sessionData.timeline || [];
+                    currentActivityIndex = sessionData.currentActivityIndex || -1;
+                    initializeSession();
+                    loadTimeline();
+                } else {
+                    alert('הסשן לא קיים');
+                }
+            });
+        }
+
+        // Initialize session UI
+        function initializeSession() {
+            document.getElementById('sessionStatus').textContent = `מחובר לסשן: ${currentSessionId}`;
+            document.getElementById('statusIndicator').className = 'status-indicator status-ready';
+            
+            // Show control panels
+            document.getElementById('liveControls').style.display = 'block';
+            document.getElementById('navigationControls').style.display = 'block';
+            document.getElementById('participantsPanel').style.display = 'block';
+            
+            // Listen to participants
+            listenToParticipants();
+            
+            // Listen to WebRTC answers
+            listenToWebRTCAnswers();
+            
+            // Update session link
+            updateSessionLink();
+            // Show copy link button
+            document.getElementById('copyLinkBtn').style.display = 'block';
+            // Initialize camera when session starts
+            initializeCamera();
+        }
+
+        // Listen to WebRTC answers and ICE candidates
+// Listen to WebRTC answers and ICE candidates
+function listenToWebRTCAnswers() {
+    console.log('🎧 מתחיל להאזין לתשובות WebRTC...');
+    
+    // האזן לתשובות לפי משתתף - תיקון הנתיב
+    database.ref(`sessions/${currentSessionId}/webrtc/answers`).on('child_added', async (snapshot) => {
+        const participantId = snapshot.key;
+        const data = snapshot.val();
+        
+        if (data && data.answer) {
+            console.log(`📨 התקבלה תשובה מ-${participantId}`);
+            
+            const pc = peerConnections.get(participantId);
+            if (pc && pc.signalingState === 'have-local-offer') {
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                    console.log(`✅ Remote description נקבע עבור ${participantId}`);
+                    connectedStudents.add(participantId);
+                    updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+                } catch (error) {
+                    console.error(`❌ שגיאה בקביעת remote description עבור ${participantId}:`, error);
+                }
+            } else {
+                console.warn(`⚠️ PeerConnection עבור ${participantId} לא במצב מתאים: ${pc?.signalingState}`);
+            }
+        }
+    });
+
+    // האזן ל-ICE candidates - תיקון הטיפול
+    database.ref(`sessions/${currentSessionId}/webrtc/student-candidates`).on('child_added', async (snapshot) => {
+        const candidateData = snapshot.val();
+        
+        // וודא שיש participantId ו-candidate תקין
+        if (candidateData && candidateData.participantId && candidateData.candidate) {
+            const pc = peerConnections.get(candidateData.participantId);
+            
+            // בדוק שיש peer connection וremote description
+            if (pc && pc.remoteDescription) {
+                try {
+                    // ודא שה-candidate תקין לפני הוספה
+                    const candidate = candidateData.candidate;
+                    if (candidate.candidate && (candidate.sdpMid !== null || candidate.sdpMLineIndex !== null)) {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                        console.log(`✅ ICE candidate נוסף עבור ${candidateData.participantId}`);
+                    } else {
+                        console.warn(`⚠️ ICE candidate לא תקין עבור ${candidateData.participantId}:`, candidate);
+                    }
+                } catch (error) {
+                    console.error(`❌ שגיאה בהוספת ICE candidate עבור ${candidateData.participantId}:`, error);
+                }
+            } else {
+                console.warn(`⚠️ PeerConnection לא מוכן עבור ${candidateData.participantId}, מחכה...`);
+            }
+        }
+    });
+}
+
+        // Listen to participants updates
+        function listenToParticipants() {
+            database.ref(`sessions/${currentSessionId}/participants`).on('value', (snapshot) => {
+                const participants = snapshot.val() || {};
+                updateParticipantsList(participants);
+                
+                // Create peer connections for new participants if streaming
+                if (isStreaming) {
+                    Object.keys(participants).forEach(participantId => {
+                        if (!peerConnections.has(participantId)) {
+                            createPeerConnectionForParticipant(participantId);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Create peer connection for specific participant
+        async function createPeerConnectionForParticipant(participantId) {
+            try {
+                console.log(`🔗 יוצר חיבור WebRTC עבור ${participantId}`);
+                
+                const pc = new RTCPeerConnection(rtcConfig);
+                peerConnections.set(participantId, pc);
+                
+                // Handle ICE candidates
+// Handle ICE candidates
+// Handle ICE candidates - תיקון שליחה
+// Handle ICE candidates - תיקון מבנה הנתונים
+pc.onicecandidate = (event) => {
+    if (event.candidate) {
+        console.log(`📤 שולח ICE candidate עבור ${participantId}`);
+        
+        // ודא שהcandidate תקין לפני שליחה
+        const candidate = event.candidate;
+        if (candidate.candidate && (candidate.sdpMid !== null || candidate.sdpMLineIndex !== null)) {
+            // שלח את הcandidate המלא, לא רק חלקים ממנו
+            database.ref(`sessions/${currentSessionId}/webrtc/admin-candidates/${participantId}`).push({
+                candidate: candidate.candidate,
+                sdpMid: candidate.sdpMid,
+                sdpMLineIndex: candidate.sdpMLineIndex,
+                timestamp: Date.now()
+            });
+        } else {
+            console.warn(`⚠️ ICE candidate לא תקין עבור ${participantId}, מדלג...`);
+        }
+    }
+};
+
+                // Handle connection state
+                pc.onconnectionstatechange = () => {
+                    console.log(`🔗 מצב חיבור עבור ${participantId}:`, pc.connectionState);
+                    if (pc.connectionState === 'connected') {
+                        connectedStudents.add(participantId);
+                        updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+                    } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                        connectedStudents.delete(participantId);
+                        updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+                    }
+                };
+
+                // Add local stream tracks
+                if (localStream) {
+                    localStream.getTracks().forEach(track => {
+                        pc.addTrack(track, localStream);
+                    });
+                }
+                
+                console.log(`✅ Peer connection נוצר עבור ${participantId}`);
+                
+            } catch (error) {
+                console.error(`❌ שגיאה ביצירת peer connection עבור ${participantId}:`, error);
+            }
+        }
+
+        // Update participants list
+        function updateParticipantsList(participants) {
+            const participantsList = document.getElementById('participantsList');
+            const participantCount = document.getElementById('participantCount');
+            
+            const participantsArray = Object.entries(participants).map(([id, data]) => ({
+                id,
+                ...data
+            })).sort((a, b) => (b.score || 0) - (a.score || 0));
+            
+            participantCount.textContent = `${participantsArray.length} משתתפים`;
+            
+            participantsList.innerHTML = participantsArray.map(participant => `
+                <div class="participant-item">
+                    <span class="participant-name">${participant.name}</span>
+                    <span class="participant-score">${participant.score || 0}</span>
+                </div>
+            `).join('');
+        }
+
+        // Toggle live stream
+        function toggleLive() {
+            if (!isStreaming) {
+                startStreaming();
+            } else {
+                stopStreaming();
+            }
+        }
+
+        async function startStreaming() {
+            try {
+                console.log('🎬 מתחיל שידור חי...');
+                
+                if (!localStream) {
+                    await initializeCamera();
+                }
+                
+                if (!localStream) {
+                    throw new Error('לא ניתן לאתחל מצלמה');
+                }
+                
+                isStreaming = true;
+                document.getElementById('liveBtn').textContent = '⏹️ עצור שידור';
+                document.getElementById('statusIndicator').className = 'status-indicator status-live';
+                updateStreamStatus('מתחיל שידור...');
+                
+                // Clear any existing WebRTC data
+                await database.ref(`sessions/${currentSessionId}/webrtc`).remove();
+                
+                // Create peer connections for existing participants
+                const participantsSnapshot = await database.ref(`sessions/${currentSessionId}/participants`).once('value');
+                const participants = participantsSnapshot.val() || {};
+                
+                for (const participantId of Object.keys(participants)) {
+                    await createPeerConnectionForParticipant(participantId);
+                }
+                
+                // Create and send offer
+                await createAndSendOffer();
+                
+                // Update activity
+                database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+                    type: 'live',
+                    streaming: true,
+                    timestamp: Date.now()
+                });
+                
+                console.log('✅ שידור חי התחיל בהצלחה');
+                
+            } catch (error) {
+                console.error('❌ שגיאה בהתחלת שידור:', error);
+                alert('שגיאה בהתחלת השידור: ' + error.message);
+                stopStreaming();
+            }
+        }
+
+async function createAndSendOffer() {
+    try {
+        // במקום ליצור tempPc, עבוד עם הconnections הקיימים
+        const participants = await database.ref(`sessions/${currentSessionId}/participants`).once('value');
+        const participantIds = Object.keys(participants.val() || {});
+        
+        // ליצור offer נפרד לכל משתתף
+        for (const participantId of participantIds) {
+            const pc = peerConnections.get(participantId);
+            if (pc) {
+                const offer = await pc.createOffer({
+                    offerToReceiveAudio: false,
+                    offerToReceiveVideo: false
+                });
+                
+                // קובע תחילה local description
+                await pc.setLocalDescription(offer);
+                
+                // שולח offer ספציפי למשתתף
+                await database.ref(`sessions/${currentSessionId}/webrtc/offers/${participantId}`).set({
+                    offer: offer,
+                    timestamp: Date.now()
+                });
+            }
+        }
+        
+        console.log('📤 WebRTC offers נשלחו לכל המשתתפים');
+        
+    } catch (error) {
+        console.error('❌ שגיאה ביצירת offers:', error);
+        throw error;
+    }
+}
+
+        function stopStreaming() {
+            try {
+                console.log('⏹️ עוצר שידור חי...');
+                
+                isStreaming = false;
+                document.getElementById('liveBtn').textContent = '🔴 התחל שידור חי';
+                document.getElementById('statusIndicator').className = 'status-indicator status-ready';
+                updateStreamStatus('שידור הופסק');
+                
+                // Close all peer connections
+                peerConnections.forEach((pc, participantId) => {
+                    console.log(`🔌 סוגר חיבור עבור ${participantId}`);
+                    pc.close();
+                });
+                peerConnections.clear();
+                connectedStudents.clear();
+                
+                // Clear WebRTC data
+                database.ref(`sessions/${currentSessionId}/webrtc`).remove();
+                
+                // Update activity
+                database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+                    type: 'live',
+                    streaming: false,
+                    timestamp: Date.now()
+                });
+                
+                console.log('✅ שידור הופסק בהצלחה');
+                
+            } catch (error) {
+                console.error('❌ שגיאה בהפסקת שידור:', error);
+            }
+        }
+
+        // Toggle chat
+        function toggleChat() {
+            const chatBtn = document.getElementById('chatBtn');
+            
+            isChatEnabled = !isChatEnabled;
+            
+            if (isChatEnabled) {
+                chatBtn.textContent = '💬 כבה צ\'אט';
+                chatBtn.className = 'btn btn-warning';
+            } else {
+                chatBtn.textContent = '💬 הפעל צ\'אט';
+                chatBtn.className = 'btn btn-success';
+            }
+            
+            // Update Firebase
+            database.ref(`sessions/${currentSessionId}/chatEnabled`).set(isChatEnabled);
+        }
+
+        // Show countdown
+        function showCountdown() {
+            const minutes = prompt('כמה דקות עד התחלת הפעילות?', '2');
+            if (!minutes) return;
+            
+            const endTime = Date.now() + (parseInt(minutes) * 60 * 1000);
+            
+            database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+                type: 'countdown',
+                endTime: endTime,
+                timestamp: Date.now()
+            });
+            
+            updateCurrentActivityDisplay('שעון הספירה לאחור');
+        }
+
+        // Navigation functions
+        function previousActivity() {
+            if (currentActivityIndex > 0) {
+                currentActivityIndex--;
+                executeActivity(timeline[currentActivityIndex]);
+                updateTimeline();
+            }
+        }
+
+        function nextActivity() {
+            if (currentActivityIndex < timeline.length - 1) {
+                currentActivityIndex++;
+                executeActivity(timeline[currentActivityIndex]);
+                updateTimeline();
+            }
+        }
+
+        // Execute activity
+        function executeActivity(activity) {
+            if (!activity) return;
+            
+            database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+                ...activity,
+                timestamp: Date.now()
+            });
+            
+            database.ref(`sessions/${currentSessionId}/currentActivityIndex`).set(currentActivityIndex);
+            
+            updateCurrentActivityDisplay(activity.name);
+        }
+
+        // Update current activity display
+        function updateCurrentActivityDisplay(activityName) {
+            document.getElementById('currentActivityDisplay').textContent = 
+                `פעילות נוכחית: ${activityName}`;
+        }
+
+        // Show add activity modal
+        function showAddActivityModal() {
+            document.getElementById('addActivityModal').style.display = 'block';
+        }
+
+        // Close add activity modal
+        function closeAddActivityModal() {
+            document.getElementById('addActivityModal').style.display = 'none';
+            selectedActivityType = null;
+            clearActivityForms();
+        }
+
+        // Select activity type
+        function selectActivityType(type) {
+            selectedActivityType = type;
+            
+            // Update UI
+            document.querySelectorAll('.activity-type').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show relevant form
+            clearActivityForms();
+            if (type === 'iframe') {
+                document.getElementById('iframeForm').style.display = 'block';
+            } else if (type === 'question') {
+                document.getElementById('questionForm').style.display = 'block';
+            } else if (type === 'break') {
+                document.getElementById('breakForm').style.display = 'block';
+            }
+        }
+
+        // Clear activity forms
+        function clearActivityForms() {
+            document.getElementById('iframeForm').style.display = 'none';
+            document.getElementById('questionForm').style.display = 'none';
+            document.getElementById('breakForm').style.display = 'none';
+        }
+
+        // Add activity
+        function addActivity() {
+            if (!selectedActivityType) {
+                alert('נא לבחור סוג פעילות');
+                return;
+            }
+            
+            const activityName = document.getElementById('activityName').value.trim();
+            if (!activityName) {
+                alert('נא להכניס שם לפעילות');
+                return;
+            }
+            
+            const activity = {
+                id: Date.now(),
+                name: activityName,
+                type: selectedActivityType
+            };
+            
+            // Add type-specific data
+            if (selectedActivityType === 'iframe') {
+                const url = document.getElementById('activityUrl').value.trim();
+                if (!url) {
+                    alert('נא להכניס קישור');
+                    return;
+                }
+                activity.url = url;
+            } else if (selectedActivityType === 'question') {
+                const questionText = document.getElementById('questionText').value.trim();
+                const answers = document.getElementById('questionAnswers').value.trim();
+                const correctAnswer = parseInt(document.getElementById('correctAnswer').value);
+                const timeLimit = parseInt(document.getElementById('questionTime').value);
+                
+                if (!questionText || !answers) {
+                    alert('נא למלא את כל השדות');
+                    return;
+                }
+                
+                activity.question = questionText;
+                activity.answers = answers.split(',').map(a => a.trim());
+                activity.correctAnswer = correctAnswer - 1; // Zero-based index
+                activity.timeLimit = timeLimit;
+            } else if (selectedActivityType === 'break') {
+                const breakTime = parseInt(document.getElementById('breakTime').value);
+                activity.duration = breakTime * 60 * 1000; // Convert to milliseconds
+            }
+            
+            // Add to timeline
+            timeline.push(activity);
+            updateTimelineInFirebase();
+            loadTimeline();
+            closeAddActivityModal();
+        }
+
+        // Update timeline in Firebase
+        function updateTimelineInFirebase() {
+            database.ref(`sessions/${currentSessionId}/timeline`).set(timeline);
+        }
+
+        // Load timeline
+        function loadTimeline() {
+            const timelineItems = document.getElementById('timelineItems');
+            
+            timelineItems.innerHTML = timeline.map((activity, index) => {
+                let statusClass = '';
+                if (index < currentActivityIndex) statusClass = 'completed';
+                else if (index === currentActivityIndex) statusClass = 'current';
+                
+                let typeIcon = '';
+                switch (activity.type) {
+                    case 'live': typeIcon = '🎥'; break;
+                    case 'iframe': typeIcon = '🎮'; break;
+                    case 'question': typeIcon = '❓'; break;
+                    case 'break': typeIcon = '☕'; break;
+                }
+                
+                return `
+                    <div class="timeline-item ${statusClass}" onclick="jumpToActivity(${index})">
+                        <div class="item-title">${typeIcon} ${activity.name}</div>
+                        <div class="item-type">${getActivityTypeName(activity.type)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get activity type name
+        function getActivityTypeName(type) {
+            switch (type) {
+                case 'live': return 'שידור חי';
+                case 'iframe': return 'פעילות/משחק';
+                case 'question': return 'שאלה אמריקאית';
+                case 'break': return 'הפסקה';
+                default: return type;
+            }
+        }
+
+        // Jump to activity
+        function jumpToActivity(index) {
+            currentActivityIndex = index;
+            executeActivity(timeline[index]);
+            updateTimeline();
+        }
+
+        // Update timeline UI
+        function updateTimeline() {
+            loadTimeline();
+        }
+
+        // Show leaderboard
+        function showLeaderboard() {
+            database.ref(`sessions/${currentSessionId}/participants`).once('value', (snapshot) => {
+                const participants = snapshot.val() || {};
+                const sorted = Object.entries(participants)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .sort((a, b) => (b.score || 0) - (a.score || 0))
+                    .slice(0, 3);
+                
+                const leaderboardData = {
+                    timestamp: Date.now(),
+                    top3: sorted
+                };
+                
+                database.ref(`sessions/${currentSessionId}/currentActivity`).set({
+                    type: 'leaderboard',
+                    data: leaderboardData,
+                    timestamp: Date.now()
+                });
+                
+                updateCurrentActivityDisplay('לוח תוצאות');
+            });
+        }
+
+        // Update session link
+        function updateSessionLink() {
+            const link = `${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${currentSessionId}`;
+            console.log('קישור לסשן:', link);
+        }
+
+        // Copy session link to clipboard
+        function copySessionLink() {
+            const link = `${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${currentSessionId}`;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                alert('הקישור הועתק ללוח! 📋\n\n' + link);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('הקישור הועתק ללוח! 📋\n\n' + link);
+            });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default session ID
+            const now = new Date();
+            const defaultSessionId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${now.getHours()}${String(now.getMinutes()).padStart(2, '0')}`;
+            document.getElementById('sessionIdInput').value = defaultSessionId;
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            // Close all peer connections
+            peerConnections.forEach(pc => pc.close());
+            
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
