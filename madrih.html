@@ -416,10 +416,12 @@
             <div class="live-controls" id="liveControls" style="display: none;">
                 <h3 style="margin-bottom: 15px;">בקרת שידור חי</h3>
                 <video class="live-video" id="liveVideo" autoplay muted style="width: 100%; height: 200px; object-fit: cover;"></video>
-                <div class="control-buttons">
-                    <button class="btn btn-danger" id="liveBtn" onclick="toggleLive()">🔴 התחל שידור חי</button>
-                    <button class="btn btn-warning" id="chatBtn" onclick="toggleChat()">💬 הפעל צ'אט</button>
-                </div>
+<!-- בתוך live-controls -->
+<div class="control-buttons">
+    <button class="btn btn-danger" id="liveBtn" onclick="toggleLive()">🔴 התחל שידור חי</button>
+    <button class="btn btn-warning" id="chatBtn" onclick="toggleChat()">💬 הפעל צ'אט</button>
+    <button class="btn btn-primary" onclick="resetCamera()">🔄 איפוס מצלמה</button>
+</div>
                 <div id="streamStatus" style="text-align: center; margin-top: 10px; color: #bdc3c7;"></div>
             </div>
 
@@ -586,29 +588,108 @@
         };
 
         // Initialize camera
-        async function initializeCamera() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        frameRate: { ideal: 30 }
-                    }, 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    }
-                });
-                document.getElementById('liveVideo').srcObject = localStream;
-                console.log('✅ מצלמה מוכנה בהצלחה');
-                updateStreamStatus('מצלמה מוכנה');
-            } catch (error) {
-                console.error('❌ שגיאה בגישה למצלמה:', error);
-                alert('לא ניתן לגשת למצלמה. בדוק הרשאות.');
-                updateStreamStatus('שגיאה במצלמה');
-            }
+// Initialize camera
+// Initialize camera
+async function initializeCamera() {
+    try {
+        // עצור זרם קיים
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
         }
+        
+        // נסה עם הגדרות ספציפיות וקפדניות
+        const videoConstraints = {
+            width: { min: 640, ideal: 1280, max: 1920 },
+            height: { min: 480, ideal: 720, max: 1080 },
+            frameRate: { min: 15, ideal: 30, max: 60 },
+            facingMode: 'user'
+        };
+        
+        console.log('🎥 מנסה לקבל מצלמה עם הגדרות:', videoConstraints);
+        
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: videoConstraints,
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
+        
+        // בדיקה מיידית של איכות הזרם
+        const videoTrack = localStream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        
+        console.log('🔍 הגדרות מצלמה בפועל:', settings);
+        
+        if (settings.width < 640 || settings.height < 480) {
+            console.error('❌ המצלמה החזירה רזולוציה נמוכה, מנסה שוב...');
+            
+            // עצור ונסה שוב עם הגדרות אחרות
+            localStream.getTracks().forEach(track => track.stop());
+            
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+                video: {
+                    width: 1280,
+                    height: 720,
+                    frameRate: 30
+                },
+                audio: true
+            });
+            
+            const newSettings = localStream.getVideoTracks()[0].getSettings();
+            console.log('🔍 הגדרות מצלמה שניות:', newSettings);
+        }
+        
+        // Debug מפורט
+        console.log('🔍 Admin stream debug מפורט:', {
+            streamExists: !!localStream,
+            streamId: localStream.id,
+            streamActive: localStream.active,
+            totalTracks: localStream.getTracks().length,
+            videoTracks: localStream.getVideoTracks().length,
+            audioTracks: localStream.getAudioTracks().length,
+            videoTrackDetails: localStream.getVideoTracks().map(track => ({
+                id: track.id,
+                kind: track.kind,
+                enabled: track.enabled,
+                readyState: track.readyState,
+                muted: track.muted,
+                label: track.label,
+                settings: track.getSettings()
+            }))
+        });
+
+        document.getElementById('liveVideo').srcObject = localStream;
+        
+        // בדיקה אם המדריך יכול לראות את עצמו
+        const adminVideo = document.getElementById('liveVideo');
+        
+        adminVideo.onloadedmetadata = () => {
+            console.log('🔍 Admin video element:', {
+                hasSource: !!adminVideo.srcObject,
+                videoWidth: adminVideo.videoWidth,
+                videoHeight: adminVideo.videoHeight,
+                readyState: adminVideo.readyState
+            });
+            
+            if (adminVideo.videoWidth <= 2 || adminVideo.videoHeight <= 2) {
+                console.error('❌ מצלמת המדריך חזרה רזולוציה נמוכה!');
+                alert('בעיה במצלמה! המצלמה מחזירה רזולוציה נמוכה מדי.');
+                return;
+            }
+        };
+        
+        console.log('✅ מצלמה מוכנה בהצלחה');
+        updateStreamStatus('מצלמה מוכנה');
+        
+    } catch (error) {
+        console.error('❌ שגיאה בגישה למצלמה:', error);
+        alert('לא ניתן לגשת למצלמה. בדוק הרשאות.');
+        updateStreamStatus('שגיאה במצלמה');
+    }
+}
 
         // Update stream status
         function updateStreamStatus(status) {
@@ -616,43 +697,114 @@
         }
 
         // Create new session
-        function createSession() {
-            const sessionIdInput = document.getElementById('sessionIdInput');
-            const startTimeInput = document.getElementById('startTimeInput');
-            
-            const sessionId = sessionIdInput.value.trim();
-            const startMinutes = parseInt(startTimeInput.value) || 5;
-            
-            if (!sessionId) {
-                alert('נא להכניס מזהה סשן');
-                return;
-            }
+// Create new session
+function createSession() {
+    const sessionIdInput = document.getElementById('sessionIdInput');
+    const startTimeInput = document.getElementById('startTimeInput');
+    
+    const sessionId = sessionIdInput.value.trim();
+    const startMinutes = parseInt(startTimeInput.value) || 5;
+    
+    if (!sessionId) {
+        alert('נא להכניס מזהה סשן');
+        return;
+    }
 
-            currentSessionId = sessionId;
-            const startTime = Date.now() + (startMinutes * 60 * 1000);
+    currentSessionId = sessionId;
+    const startTime = Date.now() + (startMinutes * 60 * 1000);
 
-            // Create session in Firebase
-            database.ref(`sessions/${sessionId}`).set({
-                createdAt: Date.now(),
-                startTime: startTime,
-                status: 'waiting',
-                currentActivity: {
-                    type: 'countdown',
-                    endTime: startTime
-                },
-                chatEnabled: true,
-                timeline: [],
-                participants: {},
-                chat: {},
-                webrtc: {}
-            }).then(() => {
-                alert(`סשן נוצר בהצלחה!\nקישור למשתתפים: ${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${sessionId}`);
-                initializeSession();
-            }).catch((error) => {
-                console.error('שגיאה ביצירת סשן:', error);
-                alert('שגיאה ביצירת הסשן');
-            });
+    // ✅ פעילויות דיפולטיביות
+    const defaultTimeline = [
+        {
+            id: Date.now() + 1,
+            name: "סרטון פתיחה",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/swM0z9TOfMQ"
+        },
+        {
+            id: Date.now() + 2,
+            name: "סרטון חידה עיניים",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/Ugr9aYJNZbU"
+        },
+        {
+            id: Date.now() + 3,
+            name: "סרטון חידה אוזניים",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/Dbwy2-DZxmM"
+        },
+        {
+            id: Date.now() + 4,
+            name: "סרטון חידה אף",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/STE1RTNRCZA"
+        },
+        {
+            id: Date.now() + 5,
+            name: "מוזיאון 360",
+            type: "iframe",
+            url: "https://kuula.co/share/hHTCt?logo=0&info=0&fs=1&vr=1&sd=1&initload=0&thumbs=1"
+        },
+        {
+            id: Date.now() + 6,
+            name: "משחק איברים",
+            type: "iframe",
+            url: "https://view.genially.com/684fb8017e74465fc6cd1cc1"
+        },
+        {
+            id: Date.now() + 7,
+            name: "סרטון חידה ידיים",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/sVxDzWyeSkw"
+        },
+        {
+            id: Date.now() + 8,
+            name: "סרטון חידה עור",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/ZjKP85gfQxE"
+        },
+        {
+            id: Date.now() + 9,
+            name: "סרטון חידה כליות",
+            type: "iframe",
+            url: "https://www.youtube.com/embed/yZVIc-_7KSQ"
+        },
+        {
+            id: Date.now() + 10,
+            name: "משחק סולמות ונחשים",
+            type: "iframe",
+            url: "liron.html"
         }
+    ];
+
+    // Create session in Firebase
+    database.ref(`sessions/${sessionId}`).set({
+        createdAt: Date.now(),
+        startTime: startTime,
+        status: 'waiting',
+        currentActivity: {
+            type: 'countdown',
+            endTime: startTime
+        },
+        chatEnabled: true,
+        timeline: defaultTimeline, // ✅ הוסף את הפעילויות הדיפולטיביות
+        participants: {},
+        chat: {},
+        webrtc: {}
+    }).then(() => {
+        alert(`סשן נוצר בהצלחה!\nקישור למשתתפים: ${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${sessionId}`);
+        
+        // ✅ עדכן את הtimeline המקומי
+        timeline = defaultTimeline;
+        currentActivityIndex = -1;
+        
+        initializeSession();
+        loadTimeline(); // ✅ טען את הפעילויות לתצוגה
+    }).catch((error) => {
+        console.error('שגיאה ביצירת סשן:', error);
+        alert('שגיאה ביצירת הסשן');
+    });
+}
 
         // Load existing session
         function loadSession() {
@@ -779,62 +931,149 @@ function listenToWebRTCAnswers() {
         }
 
         // Create peer connection for specific participant
-        async function createPeerConnectionForParticipant(participantId) {
-            try {
-                console.log(`🔗 יוצר חיבור WebRTC עבור ${participantId}`);
-                
-                const pc = new RTCPeerConnection(rtcConfig);
-                peerConnections.set(participantId, pc);
-                
-                // Handle ICE candidates
-// Handle ICE candidates
-// Handle ICE candidates - תיקון שליחה
-// Handle ICE candidates - תיקון מבנה הנתונים
-pc.onicecandidate = (event) => {
-    if (event.candidate) {
-        console.log(`📤 שולח ICE candidate עבור ${participantId}`);
+// Create peer connection for specific participant
+// Create peer connection for specific participant
+// Create peer connection for specific participant
+async function createPeerConnectionForParticipant(participantId) {
+    try {
+        console.log(`🔗 יוצר חיבור WebRTC עבור ${participantId}`);
         
-        // ודא שהcandidate תקין לפני שליחה
-        const candidate = event.candidate;
-        if (candidate.candidate && (candidate.sdpMid !== null || candidate.sdpMLineIndex !== null)) {
-            // שלח את הcandidate המלא, לא רק חלקים ממנו
-            database.ref(`sessions/${currentSessionId}/webrtc/admin-candidates/${participantId}`).push({
-                candidate: candidate.candidate,
-                sdpMid: candidate.sdpMid,
-                sdpMLineIndex: candidate.sdpMLineIndex,
-                timestamp: Date.now()
-            });
-        } else {
-            console.warn(`⚠️ ICE candidate לא תקין עבור ${participantId}, מדלג...`);
+        const pc = new RTCPeerConnection(rtcConfig);
+        peerConnections.set(participantId, pc);
+        
+        // Handle ICE candidates
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log(`📤 שולח ICE candidate עבור ${participantId}`);
+                
+                const candidate = event.candidate;
+                if (candidate.candidate && (candidate.sdpMid !== null || candidate.sdpMLineIndex !== null)) {
+                    database.ref(`sessions/${currentSessionId}/webrtc/admin-candidates/${participantId}`).push({
+                        candidate: candidate.candidate,
+                        sdpMid: candidate.sdpMid,
+                        sdpMLineIndex: candidate.sdpMLineIndex,
+                        timestamp: Date.now()
+                    });
+                } else {
+                    console.warn(`⚠️ ICE candidate לא תקין עבור ${participantId}, מדלג...`);
+                }
+            }
+        };
+
+        // Handle connection state
+        pc.onconnectionstatechange = () => {
+            console.log(`🔗 מצב חיבור עבור ${participantId}:`, pc.connectionState);
+            if (pc.connectionState === 'connected') {
+                connectedStudents.add(participantId);
+                updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+            } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                connectedStudents.delete(participantId);
+                updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+            }
+        };
+// תוסיף את זה בפונקציה createPeerConnectionForParticipant
+// אחרי ה-connectionstatechange handler:
+
+pc.onconnectionstatechange = async () => {
+    console.log(`🔗 מצב חיבור עבור ${participantId}:`, pc.connectionState);
+    if (pc.connectionState === 'connected') {
+        connectedStudents.add(participantId);
+        updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
+        
+        // ✨ DEBUG חדש: בדיקה מה באמת נשלח
+        const senders = pc.getSenders();
+        for (const sender of senders) {
+            if (sender.track && sender.track.kind === 'video') {
+                const stats = await pc.getStats(sender);
+                stats.forEach(report => {
+                    if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
+                        console.log(`📊 Stats עבור ${participantId}:`, {
+                            width: report.frameWidth,
+                            height: report.frameHeight,
+                            bitrate: report.bytesSent,
+                            fps: report.framesPerSecond,
+                            codec: report.codecId
+                        });
+                    }
+                });
+                
+                // גם בדוק את ההגדרות של ה-track עצמו
+                const trackSettings = sender.track.getSettings();
+                console.log(`📹 Track settings עבור ${participantId}:`, trackSettings);
+                
+                // בדוק constraints
+                const trackConstraints = sender.track.getConstraints();
+                console.log(`📋 Track constraints עבור ${participantId}:`, trackConstraints);
+            }
         }
     }
 };
-
-                // Handle connection state
-                pc.onconnectionstatechange = () => {
-                    console.log(`🔗 מצב חיבור עבור ${participantId}:`, pc.connectionState);
-                    if (pc.connectionState === 'connected') {
-                        connectedStudents.add(participantId);
-                        updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
-                    } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-                        connectedStudents.delete(participantId);
-                        updateStreamStatus(`מחובר ל-${connectedStudents.size} משתתפים`);
-                    }
-                };
-
-                // Add local stream tracks
-                if (localStream) {
-                    localStream.getTracks().forEach(track => {
-                        pc.addTrack(track, localStream);
+        // Add local stream tracks עם אילוץ רזולוציה
+        if (localStream && localStream.active) {
+            console.log('📹 מוסיף tracks לconnection:', localStream.getTracks().length);
+            
+            for (const track of localStream.getTracks()) {
+                console.log(`📹 Track: ${track.kind}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
+                
+                const sender = pc.addTrack(track, localStream);
+                
+                // תיקון חשוב: אילוץ רזולוציה גבוהה לוידיאו
+                if (track.kind === 'video') {
+                    // מחכה לחיבור ואז מגדיר פרמטרים
+                    pc.addEventListener('connectionstatechange', async () => {
+                        if (pc.connectionState === 'connected') {
+                            try {
+                                const params = sender.getParameters();
+                                console.log('📋 Current encoding params:', params);
+                                
+                                if (params.encodings && params.encodings.length > 0) {
+                                    // הגדרות איכות מקסימלית
+                                    params.encodings[0].maxBitrate = 5000000; // 5 Mbps
+                                    params.encodings[0].maxFramerate = 30;
+                                    params.encodings[0].scaleResolutionDownBy = 1; // ללא הקטנה!
+                                    
+                                    // נסה גם להגדיר רזולוציה ספציפית
+                                    if (params.encodings[0].rid === undefined) {
+                                        params.encodings[0].maxWidth = 1280;
+                                        params.encodings[0].maxHeight = 720;
+                                    }
+                                    
+                                    await sender.setParameters(params);
+                                    console.log('✅ Video encoding parameters updated:', params.encodings[0]);
+                                } else {
+                                    console.warn('⚠️ אין encodings זמינים');
+                                }
+                            } catch (error) {
+                                console.error('❌ שגיאה בהגדרת פרמטרים:', error);
+                            }
+                        }
                     });
+                    
+                    // גם מיד נסה להגדיר
+                    try {
+                        const initialParams = sender.getParameters();
+                        if (initialParams.encodings && initialParams.encodings.length > 0) {
+                            initialParams.encodings[0].maxBitrate = 5000000;
+                            initialParams.encodings[0].maxFramerate = 30;
+                            initialParams.encodings[0].scaleResolutionDownBy = 1;
+                            await sender.setParameters(initialParams);
+                            console.log('✅ Initial video parameters set');
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Could not set initial parameters:', error);
+                    }
                 }
-                
-                console.log(`✅ Peer connection נוצר עבור ${participantId}`);
-                
-            } catch (error) {
-                console.error(`❌ שגיאה ביצירת peer connection עבור ${participantId}:`, error);
             }
+        } else {
+            console.error('❌ Local stream לא פעיל!', localStream);
         }
+        
+        console.log(`✅ Peer connection נוצר עבור ${participantId}`);
+        
+    } catch (error) {
+        console.error(`❌ שגיאה ביצירת peer connection עבור ${participantId}:`, error);
+    }
+}
 
         // Update participants list
         function updateParticipantsList(participants) {
@@ -911,30 +1150,50 @@ pc.onicecandidate = (event) => {
                 stopStreaming();
             }
         }
-
 async function createAndSendOffer() {
     try {
-        // במקום ליצור tempPc, עבוד עם הconnections הקיימים
         const participants = await database.ref(`sessions/${currentSessionId}/participants`).once('value');
         const participantIds = Object.keys(participants.val() || {});
         
-        // ליצור offer נפרד לכל משתתף
         for (const participantId of participantIds) {
             const pc = peerConnections.get(participantId);
             if (pc) {
+                // יצירת offer עם אילוץ איכות גבוהה
                 const offer = await pc.createOffer({
                     offerToReceiveAudio: false,
                     offerToReceiveVideo: false
                 });
                 
-                // קובע תחילה local description
-                await pc.setLocalDescription(offer);
+                // אילוץ רזולוציה ב-SDP
+                let modifiedSdp = offer.sdp;
                 
-                // שולח offer ספציפי למשתתף
+                // הוסף bandwidth גבוה
+                if (modifiedSdp.includes('m=video')) {
+                    modifiedSdp = modifiedSdp.replace(
+                        /(m=video \d+ [^\r\n]+)/,
+                        '$1\r\nb=AS:5000'
+                    );
+                }
+                
+                // הוסף פרמטרי איכות לוידיאו
+                modifiedSdp = modifiedSdp.replace(
+                    /(a=rtpmap:\d+ H264[^\r\n]+)/g,
+                    '$1\r\na=fmtp:96 profile-level-id=42e01f;level-asymmetry-allowed=1;packetization-mode=1'
+                );
+                
+                const modifiedOffer = {
+                    type: offer.type,
+                    sdp: modifiedSdp
+                };
+                
+                await pc.setLocalDescription(modifiedOffer);
+                
                 await database.ref(`sessions/${currentSessionId}/webrtc/offers/${participantId}`).set({
-                    offer: offer,
+                    offer: modifiedOffer,
                     timestamp: Date.now()
                 });
+                
+                console.log(`📤 High-quality offer נשלח ל-${participantId}`);
             }
         }
         
@@ -1228,6 +1487,36 @@ async function createAndSendOffer() {
             const link = `${window.location.origin}${window.location.pathname.replace('admin.html', 'index.html')}?session=${currentSessionId}`;
             console.log('קישור לסשן:', link);
         }
+        // Reset camera
+// Reset camera - תיקון מלא
+async function resetCamera() {
+    console.log('🔄 מאפס מצלמה...');
+    
+    // עצור שידור אם פועל
+    const wasStreaming = isStreaming;
+    if (isStreaming) {
+        stopStreaming();
+    }
+    
+    // עצור את הזרם הנוכחי
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    // חכה קצת
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // הפעל מחדש
+    await initializeCamera();
+    
+    // אם היה שידור, התחל שוב
+    if (wasStreaming) {
+        setTimeout(() => {
+            startStreaming();
+        }, 2000);
+    }
+}
 
         // Copy session link to clipboard
         function copySessionLink() {
@@ -1264,6 +1553,7 @@ async function createAndSendOffer() {
                 localStream.getTracks().forEach(track => track.stop());
             }
         });
+
     </script>
 </body>
 </html>
